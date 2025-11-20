@@ -73,7 +73,7 @@ $env:GEMINI_API_KEY="..."
 
 Revisa `tracker_ia/settings.py` para mapear estas variables y no dejar secretos en el código.
 
-2) Modelos YOLO
+2) Modelo YOLO
 
 Coloca los pesos en:
 
@@ -81,8 +81,6 @@ Coloca los pesos en:
 - Especialista cascos (modelo entrenado propio): `core/yolo/weights/best.pt`
 
 Descargas recomendadas (no descargar `best.pt` — es un modelo entrenado propio):
-
-- Yolov8 pequeño (detección, ejemplo de modelo base): [yolov8n.pt](https://github.com/ultralytics/ultralytics/releases/latest/download/yolov8n.pt)
 - Yolov8 mediano para segmentación (usado como ejemplo general en este repo): [yolov8m-seg.pt](https://github.com/ultralytics/ultralytics/releases/latest/download/yolov8m-seg.pt)
 
 Ejemplos de descarga y ubicación final (colocar los archivos en `core/yolo/weights/`):
@@ -90,8 +88,6 @@ Ejemplos de descarga y ubicación final (colocar los archivos en `core/yolo/weig
 PowerShell (Windows):
 
 ```powershell
-# Descargar yolov8n
-Invoke-WebRequest -Uri "https://github.com/ultralytics/ultralytics/releases/latest/download/yolov8n.pt" -OutFile "core\yolo\weights\yolov8n.pt"
 
 # Descargar yolov8m-seg
 Invoke-WebRequest -Uri "https://github.com/ultralytics/ultralytics/releases/latest/download/yolov8m-seg.pt" -OutFile "core\yolo\weights\yolov8m-seg.pt"
