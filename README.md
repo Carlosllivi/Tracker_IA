@@ -96,7 +96,6 @@ Invoke-WebRequest -Uri "https://github.com/ultralytics/ultralytics/releases/late
 Unix / curl (macOS / Linux):
 
 ```bash
-curl -L -o core/yolo/weights/yolov8n.pt https://github.com/ultralytics/ultralytics/releases/latest/download/yolov8n.pt
 curl -L -o core/yolo/weights/yolov8m-seg.pt https://github.com/ultralytics/ultralytics/releases/latest/download/yolov8m-seg.pt
 ```
 
