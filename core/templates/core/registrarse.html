@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html class="light" lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Registro - Tracker IA</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap"
+          rel="stylesheet"
+  />
+  <link
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+          rel="stylesheet"
+  />
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#1173d4",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+          },
+          fontFamily: {
+            display: ["Inter", "sans-serif"],
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px",
+          },
+        },
+      },
+    };
+  </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div
+        class="relative flex min-h-screen w-full flex-col items-center justify-center bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden"
+>
+  <div class="layout-container flex h-full grow flex-col">
+    <div class="px-4 md:px-10 flex flex-1 justify-center py-5">
+      <div
+              class="layout-content-container flex flex-col max-w-[480px] flex-1"
+      >
+        <header class="flex items-center justify-center mb-8">
+          {% load static %}
+          <img
+                  src="{% static 'images/TRACKER IA.png' %}"
+                  alt="Cámara de seguridad"
+                  width="40"
+                  height="40"
+          />
+          <h1
+                  class="text-2xl font-bold ml-2 text-[#0d141b] dark:text-white"
+          >
+            TRACKER IA
+          </h1>
+        </header>
+        <div class="flex flex-wrap justify-center gap-3 p-4">
+          <p
+                  class="text-[#0d141b] dark:text-white text-4xl font-black leading-tight tracking-[-0.033em] text-center"
+          >
+            Crea tu cuenta
+          </p>
+        </div>
+
+        <!-- Mensajes de Django -->
+        {% if messages %}
+          <div class="px-4">
+            {% for message in messages %}
+              <div
+                      class="p-4 mb-4 text-sm rounded-lg {% if message.tags == 'error' or message.tags == 'danger' %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200{% elif message.tags == 'success' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200{% else %}bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200{% endif %}"
+              >
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="w-full mt-4 space-y-6">
+          {% csrf_token %}
+
+          <!-- Avatar block: centered and visually separated -->
+          <div class="flex justify-center px-4 py-3">
+            <div class="flex flex-col items-center">
+              <div id="avatar-preview"
+                   class="h-28 w-28 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center border">
+                <span id="avatar-initial" class="text-3xl font-semibold text-gray-500">A</span>
+                <img id="avatar-img" src="" alt="Avatar preview" class="h-full w-full object-cover hidden"/>
+              </div>
+              <label for="profile_image" class="mt-3 text-sm text-gray-600">Imagen de perfil (opcional)</label>
+              <input id="profile_image" name="profile_image" class="mt-2 block text-sm text-gray-600" type="file"
+                     accept="image/*"/>
+            </div>
+          </div>
+
+          <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+            <label class="flex flex-col min-w-40 flex-1">
+              <p class="text-[#0d141b] dark:text-gray-300 text-base font-medium leading-normal pb-2">Nombre de
+                usuario</p>
+              <input name="username"
+                     class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] bg-white dark:bg-background-dark dark:border-gray-600 dark:text-white dark:focus:ring-primary/50 h-14 placeholder:text-[#4c739a] p-[15px] text-base font-normal leading-normal"
+                     placeholder="tu_usuario" type="text" required/>
+            </label>
+          </div>
+
+          <div
+                  class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3"
+          >
+            <label class="flex flex-col min-w-40 flex-1">
+              <p
+                      class="text-[#0d141b] dark:text-gray-300 text-base font-medium leading-normal pb-2"
+              >
+                Nombre
+              </p>
+              <input
+                      name="first_name"
+                      class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] bg-white dark:bg-background-dark dark:border-gray-600 dark:text-white dark:focus:ring-primary/50 h-14 placeholder:text-[#4c739a] p-[15px] text-base font-normal leading-normal"
+                      placeholder="Tu nombre"
+                      type="text"
+                      required
+              />
+            </label>
+          </div>
+
+          <div
+                  class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3"
+          >
+            <label class="flex flex-col min-w-40 flex-1">
+              <p
+                      class="text-[#0d141b] dark:text-gray-300 text-base font-medium leading-normal pb-2"
+              >
+                Apellido
+              </p>
+              <input
+                      name="last_name"
+                      class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] bg-white dark:bg-background-dark dark:border-gray-600 dark:text-white dark:focus:ring-primary/50 h-14 placeholder:text-[#4c739a] p-[15px] text-base font-normal leading-normal"
+                      placeholder="Tu apellido"
+                      type="text"
+                      required
+              />
+            </label>
+          </div>
+
+          <div
+                  class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3"
+          >
+            <label class="flex flex-col min-w-40 flex-1">
+              <p
+                      class="text-[#0d141b] dark:text-gray-300 text-base font-medium leading-normal pb-2"
+              >
+                Correo electrónico
+              </p>
+              <input
+                      name="email"
+                      class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] bg-white dark:bg-background-dark dark:border-gray-600 dark:text-white dark:focus:ring-primary/50 h-14 placeholder:text-[#4c739a] p-[15px] text-base font-normal leading-normal"
+                      placeholder="tu@email.com"
+                      type="email"
+                      required
+              />
+            </label>
+          </div>
+
+          <div
+                  class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3"
+          >
+            <label class="flex flex-col min-w-40 flex-1">
+              <p
+                      class="text-[#0d141b] dark:text-gray-300 text-base font-medium leading-normal pb-2"
+              >
+                Contraseña
+              </p>
+              <div class="flex w-full flex-1 items-stretch rounded-lg">
+                <input
+                        name="password1"
+                        class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] bg-white dark:bg-background-dark dark:border-gray-600 dark:text-white dark:focus:ring-primary/50 h-14 placeholder:text-[#4c739a] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal leading-normal"
+                        placeholder="Mínimo 8 caracteres"
+                        type="password"
+                        required
+                />
+                <div
+                        class="text-[#4c739a] flex border border-[#cfdbe7] bg-white dark:bg-background-dark dark:border-gray-600 items-center justify-center pr-[15px] rounded-r-lg border-l-0"
+                >
+                      <span class="material-symbols-outlined cursor-pointer"
+                      >visibility_off</span
+                      >
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <div
+                  class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3"
+          >
+            <label class="flex flex-col min-w-40 flex-1">
+              <p
+                      class="text-[#0d141b] dark:text-gray-300 text-base font-medium leading-normal pb-2"
+              >
+                Confirmar contraseña
+              </p>
+              <div class="flex w-full flex-1 items-stretch rounded-lg">
+                <input
+                        name="password2"
+                        class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141b] focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] bg-white dark:bg-background-dark dark:border-gray-600 dark:text-white dark:focus:ring-primary/50 h-14 placeholder:text-[#4c739a] p-[15px] rounded-r-none border-r-0 pr-2 text-base font-normal leading-normal"
+                        placeholder="Repite tu contraseña"
+                        type="password"
+                        required
+                />
+                <div
+                        class="text-[#4c739a] flex border border-[#cfdbe7] bg-white dark:bg-background-dark dark:border-gray-600 items-center justify-center pr-[15px] rounded-r-lg border-l-0"
+                >
+                      <span class="material-symbols-outlined cursor-pointer"
+                      >visibility_off</span
+                      >
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <div
+                  class="flex flex-col items-center justify-center gap-4 px-4 py-3"
+          >
+            <button
+                    type="submit"
+                    class="flex items-center justify-center w-full h-14 px-6 py-4 rounded-lg bg-primary text-white text-base font-bold leading-normal transition-colors hover:bg-primary/90"
+            >
+              Registrarse
+            </button>
+            <p class="text-[#4c739a] dark:text-gray-400 text-center">
+              ¿Ya tienes una cuenta?
+              <a
+                      class="font-medium text-primary hover:underline"
+                      href="{% url 'login' %}"
+              >Inicia sesión</a
+              >
+            </p>
+          </div>
+        </form>
+
+        <footer
+                class="mt-8 text-center text-sm text-gray-500 dark:text-gray-400"
+        >
+          <p>
+            Al registrarte, aceptas nuestros
+            <a class="underline hover:text-primary" href="#"
+            >Términos de servicio</a
+            >
+            y
+            <a class="underline hover:text-primary" href="#"
+            >Política de privacidad</a
+            >.
+          </p>
+        </footer>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+
+<script>
+  // Preview selected avatar image in registration form
+  (function () {
+    const input = document.getElementById('profile_image');
+    const img = document.getElementById('avatar-img');
+    const initial = document.getElementById('avatar-initial');
+    if (!input) return;
+    input.addEventListener('change', function (e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) {
+        img.src = '';
+        img.classList.add('hidden');
+        if (initial) initial.classList.remove('hidden');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function (ev) {
+        img.src = ev.target.result;
+        img.classList.remove('hidden');
+        if (initial) initial.classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    });
+  })();
+
+  // Toggle password visibility
+  (function () {
+    const toggleButtons = document.querySelectorAll('.material-symbols-outlined');
+
+    toggleButtons.forEach(function (button) {
+      if (button.textContent.trim() === 'visibility_off' || button.textContent.trim() === 'visibility') {
+        button.addEventListener('click', function () {
+          const inputWrapper = this.closest('.flex.w-full');
+          const input = inputWrapper.querySelector('input[type="password"], input[type="text"]');
+
+          if (input.type === 'password') {
+            input.type = 'text';
+            this.textContent = 'visibility';
+          } else {
+            input.type = 'password';
+            this.textContent = 'visibility_off';
+          }
+        });
+      }
+    });
+  })();
+</script>

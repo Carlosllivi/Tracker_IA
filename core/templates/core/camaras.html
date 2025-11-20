@@ -1,0 +1,318 @@
+<html class="light" lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Tracker IA</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#1173d4",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked+.slider {
+      background-color: #22c55e;
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(16px);
+    }
+  </style>
+  <script>
+    function confirmarEliminar(numero, nombre) {
+      if (confirm(`¿Estás seguro de eliminar la cámara "${nombre}"?\n\nEsta acción no se puede deshacer.`)) {
+        // Crear formulario y enviarlo
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/camaras/eliminar/${numero}/`;
+
+        // Agregar CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfToken) {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'csrfmiddlewaretoken';
+          input.value = csrfToken.value;
+          form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-[#212529] dark:text-slate-50">
+  {% csrf_token %}
+  <div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+    <div class="layout-container flex h-full grow flex-col">
+      <div class="flex flex-1 justify-center">
+        <div class="layout-content-container flex flex-col max-w-[1200px] flex-1">
+          <header
+            class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#e7edf3] dark:border-background-dark px-10 py-3">
+            <div class="flex items-center gap-4 text-[#0d141b] dark:text-slate-50">
+              <div class="size-6">
+                {% load static %}
+                <img src="{% static 'images/TRACKER IA.png' %}" alt="Cámara de seguridad" width="400" height="400">
+              </div>
+              <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">TRACKER IA</h2>
+            </div>
+            <div class="flex flex-1 justify-end gap-8">
+              <div class="flex items-center gap-9">
+                <a class="text-[#0d141b] dark:text-slate-50 text-sm font-medium leading-normal"
+                  href="{% url 'panel' %}">Panel de Control</a>
+                <a class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal"
+                  href="{% url 'camaras' %}">Camaras</a>
+                <a class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal"
+                  href="{% url 'reportes' %}">Reportes</a>
+                {% if request.user.is_superuser %}
+                <a class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal"
+                  href="{% url 'usuarios' %}">Usuarios</a>
+                {% endif %}
+              </div>
+              <div class="flex items-center gap-2">
+                <a href="{% url 'logout' %}"
+                  class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]">
+                  <span class="truncate">Cerrar Sesion</span>
+                </a>
+              </div>
+          </header>
+          <main class="p-10">
+            {% if messages %}
+            <div class="mb-6 space-y-3">
+              {% for message in messages %}
+              <div class="flex gap-3 rounded-lg border-l-4 px-4 py-3 text-sm font-medium
+                {% if message.tags == 'success' %}border-green-500 bg-green-50 text-green-700 dark:border-green-400 dark:bg-green-900/30 dark:text-green-200
+                {% elif message.tags == 'error' %}border-red-500 bg-red-50 text-red-700 dark:border-red-400 dark:bg-red-900/30 dark:text-red-200
+                {% elif message.tags == 'warning' %}border-yellow-500 bg-yellow-50 text-yellow-700 dark:border-yellow-400 dark:bg-yellow-900/30 dark:text-yellow-200
+                {% else %}border-blue-500 bg-blue-50 text-blue-700 dark:border-blue-400 dark:bg-blue-900/30 dark:text-blue-200{% endif %}">
+                <span class="material-symbols-outlined text-base">info</span>
+                <span>{{ message }}</span>
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+            <div class="flex flex-wrap justify-between gap-3 mb-8">
+              <p
+                class="text-[#0d141b] dark:text-slate-50 text-4xl font-black leading-tight tracking-[-0.033em] min-w-72">
+                Gestión de Cámaras</p>
+              
+              <a href="{% url 'agregar_camara' %}"
+                class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-opacity-90 transition-all">
+                <span class="material-symbols-outlined mr-2">add_circle</span>
+                <span class="truncate">Nueva Cámara</span>
+              </a>
+              
+            </div>
+
+            <div class="flex items-center gap-1 px-1 py-1 mb-6">
+              <div class="flex-grow">
+                <form method="get" action="{% url 'camaras' %}">
+                  <label class="flex flex-col min-w-400 h-12 w-100">
+                    <div
+                      class="flex w-full flex-1 items-stretch rounded-lg h-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-primary">
+                      <div class="text-gray-500 dark:text-gray-400 flex items-center justify-center pl-4">
+                        <span class="material-symbols-outlined">search</span>
+                      </div>
+                      <input name="buscar"
+                        class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-0 border-none bg-transparent h-full placeholder:text-gray-500 dark:placeholder:text-gray-400 px-4 pl-2 text-base font-normal leading-normal"
+                        placeholder="Buscar por nombre" value="{{ buscar }}" />
+                    </div>
+                  </label>
+                </form>
+              </div>
+            </div>
+
+            <div class="px-400 py-3">
+              <div
+                class="flex overflow-hidden rounded-lg border border-[#cfdbe7] dark:border-gray-700 bg-white dark:bg-background-dark">
+                <table class="flex-1 w-full text-left">
+                  <thead>
+                    <tr class="bg-slate-50 dark:bg-gray-800">
+                      <th
+                        class="px-4 py-3 text-left text-[#0d141b] dark:text-gray-300 w-[150px] text-sm font-medium leading-normal">
+                        Número</th>
+                      <th
+                        class="px-4 py-3 text-left text-[#0d141b] dark:text-gray-300 w-[250px] text-sm font-medium leading-normal">
+                        Nombre</th>
+                      <th
+                        class="px-4 py-3 text-left text-[#0d141b] dark:text-gray-300 w-[200px] text-sm font-medium leading-normal">
+                        Ubicación</th>
+                      <th
+                        class="px-4 py-3 text-left text-[#0d141b] dark:text-gray-300 w-[200px] text-sm font-medium leading-normal">
+                        Fuente</th>
+                      <th
+                        class="px-4 py-3 text-left text-[#0d141b] dark:text-gray-300 w-[120px] text-sm font-medium leading-normal">
+                        Estado</th>
+                      <th
+                        class="px-4 py-3 text-left text-[#0d141b] dark:text-gray-300 w-[120px] text-sm font-medium leading-normal">
+                        Habilitada</th>
+                      {% if perms.core.change_camara or perms.core.delete_camara %}
+                      <th
+                        class="px-4 py-3 text-left text-[#0d141b] dark:text-gray-300 w-[140px] text-sm font-medium leading-normal">
+                        Acciones</th>
+                      {% endif %}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% if camaras %}
+                    {% for camara in camaras %}
+                    <tr
+                      class="border-t border-t-[#cfdbe7] dark:border-t-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <td
+                        class="h-[72px] px-4 py-2 text-[#4c739a] dark:text-gray-400 text-sm font-normal leading-normal">
+                        {{ camara.numero }}</td>
+                      <td class="h-[72px] px-4 py-2 text-[#0d141b] dark:text-white text-sm font-normal leading-normal">
+                        {{ camara.nombre }}</td>
+                      <td
+                        class="h-[72px] px-4 py-2 text-[#4c739a] dark:text-gray-400 text-sm font-normal leading-normal">
+                        {{ camara.ubicacion }}</td>
+                      <td class="h-[72px] px-4 py-2 text-[#4c739a] dark:text-gray-300 text-sm font-normal leading-normal">
+                        <div class="flex flex-col gap-1">
+                          <span class="font-semibold text-[#0d141b] dark:text-white text-xs uppercase tracking-wide">
+                            {{ camara.get_tipo_fuente_display }}
+                          </span>
+                          {% if camara.tipo_fuente == 'stream' and camara.url_streaming %}
+                          <span class="text-xs text-gray-500 dark:text-gray-400 break-words">{{ camara.url_streaming|truncatechars:45 }}</span>
+                          {% elif camara.tipo_fuente == 'archivo' and camara.archivo_video %}
+                          <span class="text-xs text-gray-500 dark:text-gray-400">{{ camara.archivo_video|cut:'videos/' }}</span>
+                          {% else %}
+                          <span class="text-xs text-gray-400 italic">Sin fuente configurada</span>
+                          {% endif %}
+                        </div>
+                      </td>
+                      <td class="h-[72px] px-4 py-2">
+                        <span
+                          class="px-3 py-1 rounded-full text-xs font-semibold {% if camara.estado == 'activa' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200{% elif camara.estado == 'inactiva' %}bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200{% else %}bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200{% endif %}">
+                          {{ camara.get_estado_display }}
+                        </span>
+                      </td>
+                      <td class="h-[72px] px-4 py-2">
+                        <span
+                          class="px-3 py-1 rounded-full text-xs font-semibold {% if camara.habilitada %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                          {% if camara.habilitada %}Sí{% else %}No{% endif %}
+                        </span>
+                      </td>
+                      {% if perms.core.change_camara or perms.core.delete_camara %}
+                      <td class="h-[72px] px-4 py-2">
+                        <div class="flex items-center gap-2">
+                          {% if perms.core.change_camara %}
+                          <a href="{% url 'editar_camara' camara.numero %}"
+                            class="text-primary hover:text-blue-700 dark:text-primary dark:hover:text-blue-500"
+                            title="Editar">
+                            <span class="material-symbols-outlined">edit</span>
+                          </a>
+                          {% endif %}
+                          {% if perms.core.delete_camara %}
+                          <button type="button" data-numero="{{ camara.numero }}" data-nombre="{{ camara.nombre|escape }}"
+                            class="btn-eliminar text-red-600 hover:text-red-800 dark:text-red-500 dark:hover:text-red-400"
+                            title="Eliminar">
+                            <span class="material-symbols-outlined">delete</span>
+                          </button>
+                          {% endif %}
+                        </div>
+                      </td>
+                      {% endif %}
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                      <td colspan="7" class="h-[200px] px-4 py-2 text-center">
+                        <div class="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
+                          <span class="material-symbols-outlined text-6xl mb-4">videocam_off</span>
+                          <p class="text-lg font-semibold">No se encontraron cámaras</p>
+                          {% if buscar %}
+                          <p class="text-sm mt-2">No hay resultados para "{{ buscar }}"</p>
+                          <a href="{% url 'camaras' %}" class="mt-4 text-primary hover:underline">Ver todas las
+                            cámaras</a>
+                          {% else %}
+                          <p class="text-sm mt-2 text-gray-400">No hay cámaras registradas en el sistema</p>
+                          <p class="text-sm mt-1 text-gray-400">Agrega cámaras desde el panel de administración</p>
+
+                          {% endif %}
+                        </div>
+                      </td>
+                    </tr>
+                    {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </main>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% if perms.core.delete_camara %}
+  <script>
+    document.addEventListener('click', function(event) {
+      const btn = event.target.closest('.btn-eliminar');
+      if (!btn) return;
+      const numero = btn.getAttribute('data-numero');
+      const nombre = btn.getAttribute('data-nombre') || '';
+      confirmarEliminar(numero, nombre);
+    });
+  </script>
+  {% endif %}
+</body>
+</html>

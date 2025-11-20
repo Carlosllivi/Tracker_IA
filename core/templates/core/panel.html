@@ -1,0 +1,656 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="light" lang="es">
+
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Tracker IA - Panel de Control</title>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {"primary": "#1173d4", "background-light": "#f6f7f8", "background-dark": "#101922"},
+          fontFamily: {"display": ["Inter", "sans-serif"]}
+        }
+      },
+    }
+  </script>
+
+  <style>
+      .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+
+      .material-symbols-outlined.animate-spin {
+          animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+          from {
+              transform: rotate(0deg);
+          }
+          to {
+              transform: rotate(360deg);
+          }
+      }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-[#212529] dark:text-slate-50">
+
+<div class="relative flex h-auto min-h-screen w-full flex-col">
+  <div class="layout-container flex h-full grow flex-col">
+    <div class="flex flex-1 justify-center">
+      <div class="layout-content-container flex flex-col max-w-[1200px] flex-1">
+
+        <header class="flex items-center justify-between whitespace-nowrap border-b px-10 py-3">
+          <div class="flex items-center gap-4 text-[#0d141b] dark:text-slate-50">
+            <div class="w-10"><img src="{% static 'images/TRACKER IA.png' %}" alt="Logo Tracker IA"></div>
+            <h2 class="text-lg font-bold">TRACKER IA</h2>
+          </div>
+          <div class="flex flex-1 justify-end items-center gap-8">
+            <nav class="flex items-center gap-9">
+              <a class="text-[#0d141b] dark:text-slate-50 text-sm font-medium" href="{% url 'panel' %}">Panel de
+                Control</a>
+              {% if perms.core.view_camara %}<a class="text-gray-500 dark:text-gray-400 text-sm font-medium"
+                                                href="{% url 'camaras' %}">Camaras</a>{% endif %}
+              {% if perms.core.view_reportediario %}<a class="text-gray-500 dark:text-gray-400 text-sm font-medium"
+                                                       href="{% url 'reportes' %}">Reportes</a>{% endif %}
+              {% if request.user.is_superuser %}<a class="text-gray-500 dark:text-gray-400 text-sm font-medium"
+                                                   href="{% url 'usuarios' %}">Usuarios</a>{% endif %}
+            </nav>
+            <div class="relative">
+              <button type="button" class="flex items-center gap-3 rounded-full"
+                      onclick="document.getElementById('user-menu').classList.toggle('hidden')">
+                {% if user.profile_image %}<img src="{{ user.profile_image.url }}" alt="Avatar"
+                                                class="h-10 w-10 rounded-full object-cover"/>{% else %}
+                  <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold">{{ user.username|slice:":1"|upper }}</div>{% endif %}
+                <span class="hidden sm:inline">{{ user.get_full_name|default:user.username }}</span>
+              </button>
+              <div id="user-menu"
+                   class="hidden absolute right-0 mt-2 w-48 rounded-lg border bg-white p-2 shadow-lg dark:bg-gray-800 z-10">
+                <a href="{% url 'perfil' %}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">Configuración</a>
+                <a href="{% url 'logout' %}" class="block px-3 py-2 text-sm text-red-600 hover:bg-red-50">Cerrar
+                  sesión</a>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div id="notification-container" class="fixed top-20 right-5 z-[100] space-y-3 w-full max-w-sm"></div>
+
+        <main class="p-10">
+          <div class="flex flex-wrap justify-between gap-3 mb-8">
+            <h1 class="text-4xl font-black">Panel de Control</h1>
+            <p class="text-sm">Cámaras activas: <span class="font-bold text-green-600">{{ camaras_activas }}</span>
+              / {{ total_camaras }}</p>
+          </div>
+
+          <section class="space-y-6 mb-12">
+            <p class="text-sm text-gray-500">Métricas de las últimas 24 horas.</p>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div class="rounded-xl border bg-white p-6 shadow-sm"><p class="text-sm font-medium text-gray-500">
+                Detecciones totales</p>
+                <p id="total-detections-card"
+                   class="mt-2 text-3xl font-extrabold">{{ detecciones_total_24h|default:0 }}</p></div>
+              <div class="rounded-xl border border-green-200 bg-green-50 p-6 shadow-sm"><p
+                      class="text-sm font-medium text-green-700">Con casco</p>
+                <p id="with-helmet-card"
+                   class="mt-2 text-3xl font-extrabold text-green-700">{{ detecciones_con_casco_24h|default:0 }}</p>
+              </div>
+              <div class="rounded-xl border border-red-200 bg-red-50 p-6 shadow-sm"><p
+                      class="text-sm font-medium text-red-700">Sin casco</p>
+                <p id="without-helmet-card"
+                   class="mt-2 text-3xl font-extrabold text-red-700">{{ detecciones_sin_casco_24h|default:0 }}</p></div>
+            </div>
+          </section>
+
+          {% if camaras %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {% for camara in camaras %}
+                <div id="camera-card-{{ camara.numero }}" class="flex flex-col gap-2">
+                  <button type="button"
+                          class="flex flex-col rounded-xl p-0 text-left transition focus:outline-none group"
+                          data-camera-trigger data-numero="{{ camara.numero }}" data-nombre="{{ camara.nombre|escape }}"
+                          data-fuente="{{ camara.tipo_fuente }}" data-video="
+
+                          {% if camara.tipo_fuente == 'archivo' and camara.archivo_video %}{% static camara.archivo_video %}{% endif %}">
+                    <div class="relative aspect-video overflow-hidden rounded-lg border bg-gray-200 group-hover:border-primary transition-colors">
+                      {% if camara.tipo_fuente == 'archivo' and camara.archivo_video %}
+                        <video src="{% static camara.archivo_video %}" class="h-full w-full object-cover" muted loop
+                               autoplay playsinline preload="metadata"></video>
+                      {% else %}
+                        <div class="flex h-full w-full flex-col items-center justify-center text-center text-gray-500 p-4">
+                          <span class="material-symbols-outlined text-6xl">videocam_off</span>
+                          <p class="text-xs mt-2">Vista previa no disponible para fuentes de streaming.</p></div>
+                      {% endif %}
+                    </div>
+                  </button>
+                  <div class="text-center px-2">
+                    <p class="text-lg font-semibold">{{ camara.nombre }}</p>
+                    <div class="infractions-button-placeholder mt-2 h-9"></div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </main>
+      </div>
+    </div>
+
+    <!-- MODAL DE CÁMARA CON OVERLAY DE PROCESAMIENTO MEJORADO -->
+    <div id="camera-modal" class="fixed inset-0 z-50 hidden" role="dialog"
+         data-detect-template="{% url 'detectar_camara' 0 %}">
+      <div class="absolute inset-0 bg-black/70" data-close-modal></div>
+      <div class="relative mx-auto flex h-full w-full max-w-6xl items-center justify-center p-4">
+        <div class="relative flex w-full max-h-[95vh] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-900">
+          <header class="flex-shrink-0 flex items-center justify-between border-b px-6 py-4">
+            <h3 id="modal-camera-name" class="text-xl font-semibold"></h3>
+            <button type="button" class="p-2 rounded-full transition hover:bg-gray-100 dark:hover:bg-gray-800"
+                    data-close-modal>
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </header>
+
+          <!-- ÁREA DE VISUALIZACIÓN -->
+          <div class="flex-1 bg-black/5 flex items-center justify-center overflow-hidden min-h-[400px] relative">
+            <div id="modal-video-wrapper" class="hidden h-full w-full">
+              <video id="modal-video" class="w-full h-full object-contain" controls preload="metadata"></video>
+            </div>
+            <div id="modal-placeholder" class="hidden flex-col text-center p-6">
+              <span class="material-symbols-outlined text-6xl text-gray-400">videocam_off</span>
+              <p class="mt-2 text-gray-500">Esta cámara no utiliza un archivo de video local.</p>
+            </div>
+
+            <!-- OVERLAY DE PROCESAMIENTO MEJORADO -->
+            <div id="processing-overlay"
+                 class="hidden absolute inset-0 bg-black/90 flex-col items-center justify-center text-white z-20">
+              <div class="w-full h-full p-6 flex flex-col items-center justify-center max-w-4xl mx-auto">
+
+                <!-- Imagen de procesamiento -->
+                <div id="processing-image-container"
+                     class="w-full flex-1 relative mb-6 flex items-center justify-center">
+                  <img id="processing-image" src="" alt="Procesando..."
+                       class="max-w-full max-h-full object-contain rounded-lg shadow-2xl"/>
+                </div>
+
+                <!-- Información de estado -->
+                <div class="w-full space-y-4">
+                  <!-- Fase actual -->
+                  <div class="text-center">
+                    <p id="processing-phase" class="text-sm font-semibold text-blue-400 uppercase tracking-wider mb-1">
+                      Iniciando...</p>
+                    <p id="processing-status" class="text-xl font-bold">Preparando análisis</p>
+                    <p id="processing-substatus" class="text-sm text-gray-400 mt-1"></p>
+                  </div>
+
+                  <!-- Barra de progreso -->
+                  <div class="w-full">
+                    <div class="flex justify-between text-xs text-gray-400 mb-1">
+                      <span>Progreso</span>
+                      <span id="progress-percentage">0%</span>
+                    </div>
+                    <div class="bg-gray-800 rounded-full h-3 overflow-hidden">
+                      <div id="progress-bar"
+                           class="bg-gradient-to-r from-blue-500 to-purple-500 h-3 rounded-full transition-all duration-300 ease-out"
+                           style="width:0%"></div>
+                    </div>
+                  </div>
+
+                  <!-- Contador de detecciones -->
+                  <div id="detection-counter" class="hidden grid grid-cols-3 gap-3 text-center">
+                    <div class="bg-gray-800/50 rounded-lg p-3">
+                      <p class="text-2xl font-bold text-blue-400" id="counter-processing">0</p>
+                      <p class="text-xs text-gray-400">Procesando</p>
+                    </div>
+                    <div class="bg-green-900/30 rounded-lg p-3">
+                      <p class="text-2xl font-bold text-green-400" id="counter-with-helmet">0</p>
+                      <p class="text-xs text-gray-400">Con Casco</p>
+                    </div>
+                    <div class="bg-red-900/30 rounded-lg p-3">
+                      <p class="text-2xl font-bold text-red-400" id="counter-without-helmet">0</p>
+                      <p class="text-xs text-gray-400">Sin Casco</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <footer class="flex-shrink-0 border-t p-4">
+            <div data-detect-container>
+              <form method="post" class="space-y-3" data-detect-form>
+                {% csrf_token %}
+                <div class="flex flex-wrap items-center gap-4 text-sm">
+{#                  <label class="font-medium flex items-center gap-2">#}
+{#                    FPS:#}
+{#                    <input type="number" name="frames_por_segundo" value="10" min="1" max="30"#}
+{#                           class="w-20 p-1 rounded border-gray-300">#}
+{#                  </label>#}
+                  <label class="font-medium flex items-center gap-2">
+                    Guardar Detecciones
+                    <input type="checkbox" name="save_media" value="1" checked
+                           class="h-4 w-4 rounded text-primary focus:ring-primary">
+                  </label>
+                </div>
+                <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-semibold text-white transition hover:bg-primary/90 disabled:bg-gray-400">
+                  <span class="material-symbols-outlined text-base">play_circle</span> Ejecutar Detección
+                </button>
+              </form>
+              <div class="hidden text-sm text-yellow-700 bg-yellow-50 p-3 rounded-lg" data-detect-unavailable>
+                La detección solo está disponible para cámaras con archivo de video local.
+              </div>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE INFRACCIONES -->
+    <div id="infractions-modal" class="fixed inset-0 z-[60] hidden">
+      <div class="absolute inset-0 bg-black/70" data-close-infractions></div>
+      <div class="relative mx-auto flex h-full w-full items-center justify-center px-4 py-6">
+        <div class="relative w-full max-w-5xl max-h-[90vh] flex flex-col rounded-2xl bg-white shadow-2xl">
+          <header class="flex-shrink-0 flex items-center justify-between border-b px-6 py-4">
+            <h3 class="text-2xl font-bold">Infractores Detectados</h3>
+            <button type="button" class="p-2 rounded-full transition hover:bg-gray-100" data-close-infractions>
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </header>
+          <div class="flex-1 overflow-y-auto p-6">
+            <div id="infractions-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            <div id="no-infractions-message" class="hidden text-center py-12">
+              <p class="text-gray-500">No hay infracciones para mostrar.</p>
+            </div>
+          </div>
+          <footer class="flex-shrink-0 border-t px-6 py-4 text-right">
+            <button type="button" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition"
+                    data-close-infractions>
+              Cerrar
+            </button>
+          </footer>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DATOS INICIALES INYECTADOS DE FORMA SEGURA -->
+<script id="initial-data-script" type="application/json">
+  {{ infracciones_por_camara_json|safe }}
+</script>
+
+<script>
+  (function () {
+    let websocket = null;
+    let currentCameraNumber = null;
+    let detectionResults = {}; // Infracciones (sin casco con PDF)
+    let allDetections = {}; // TODAS las detecciones (con y sin casco)
+    let processingStats = {processing: 0, withHelmet: 0, withoutHelmet: 0};
+
+    const modal = document.getElementById('camera-modal');
+    const infractionsModal = document.getElementById('infractions-modal');
+    const processingOverlay = document.getElementById('processing-overlay');
+    const processingImage = document.getElementById('processing-image');
+    const processingPhase = document.getElementById('processing-phase');
+    const processingStatus = document.getElementById('processing-status');
+    const processingSubstatus = document.getElementById('processing-substatus');
+    const progressBar = document.getElementById('progress-bar');
+    const progressPercentage = document.getElementById('progress-percentage');
+    const detectionCounter = document.getElementById('detection-counter');
+
+    const totalDetectionsCardEl = document.getElementById('total-detections-card');
+    const withHelmetCardEl = document.getElementById('with-helmet-card');
+    const withoutHelmetCardEl = document.getElementById('without-helmet-card');
+
+    // === FUNCIONES DE UI ===
+    const showNotification = (msg, type = "info") => {
+      const styles = {
+        success: "border-green-500 bg-green-50 text-green-700",
+        error: "border-red-500 bg-red-50 text-red-700",
+        info: "border-blue-500 bg-blue-50 text-blue-700"
+      };
+      const container = document.getElementById("notification-container");
+      const notif = document.createElement("div");
+      notif.className = `flex items-center gap-3 rounded-lg border-l-4 px-4 py-3 text-sm shadow-lg transition-all transform-gpu opacity-0 translate-x-10 ${styles[type]}`;
+      notif.innerHTML = `<span class="material-symbols-outlined">info</span><span>${msg}</span>`;
+      container.appendChild(notif);
+      setTimeout(() => notif.classList.remove("opacity-0", "translate-x-10"), 10);
+      setTimeout(() => {
+        notif.style.opacity = "0";
+        setTimeout(() => notif.remove(), 500);
+      }, 5000);
+    };
+
+    const updateProgress = (progress, phase, status, substatus = '') => {
+      progressBar.style.width = `${progress}%`;
+      progressPercentage.textContent = `${Math.round(progress)}%`;
+      processingPhase.textContent = phase;
+      processingStatus.textContent = status;
+      processingSubstatus.textContent = substatus;
+    };
+
+    const updateCounters = () => {
+      document.getElementById('counter-processing').textContent = processingStats.processing;
+      document.getElementById('counter-with-helmet').textContent = processingStats.withHelmet;
+      document.getElementById('counter-without-helmet').textContent = processingStats.withoutHelmet;
+      detectionCounter.classList.remove('hidden');
+    };
+
+    // === WEBSOCKET ===
+    function connectWebSocket(url) {
+      if (websocket) websocket.close();
+
+      websocket = new WebSocket(`${window.location.protocol === "https" ? "wss" : "ws"}://${window.location.host}${url}`);
+
+      websocket.onopen = () => {
+        // AJUSTE: Limpiar la imagen anterior para evitar mostrar el frame residual.
+        processingImage.src = "";
+
+        processingOverlay.classList.remove("hidden");
+        updateProgress(0, "FASE 1: RASTREO", "Iniciando análisis de video...");
+        processingStats = {processing: 0, withHelmet: 0, withoutHelmet: 0};
+
+        // Reiniciar y ocultar los contadores
+        document.getElementById('counter-processing').textContent = '0';
+        document.getElementById('counter-with-helmet').textContent = '0';
+        document.getElementById('counter-without-helmet').textContent = '0';
+        detectionCounter.classList.add('hidden');
+      };
+
+      websocket.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+
+        if (data.type === 'frame') {
+          // Asignar la imagen. La comprobación para evitar parpadeos no es estrictamente
+          // necesaria si el backend envía a un FPS razonable.
+          processingImage.src = data.image;
+
+          const phase = data.progress < 50 ? "FASE 1: RASTREO" : "FASE 2: CLASIFICACIÓN";
+          updateProgress(data.progress, phase, data.status || "Procesando frames...", data.substatus || '');
+
+        } else if (data.type === 'processing') {
+          // Este evento se podría usar para una UI más granular, pero el
+          // mensaje 'finished' se encarga de las actualizaciones críticas.
+          // Aquí podríamos actualizar los contadores si el backend los enviara en tiempo real.
+          updateProgress(data.progress, "FASE 2: CLASIFICACIÓN", data.status, `Resultado: ${data.current_result}`);
+
+        } else if (data.type === 'finished') {
+          console.log("✅ Proceso completado, datos recibidos:", data);
+          updateProgress(100, "COMPLETADO", "Análisis finalizado con éxito");
+
+          // AJUSTE: Actualizar tarjetas del dashboard con el resumen GLOBAL recibido del backend.
+          if (data.summary) {
+            console.log("Actualizando métricas globales del dashboard:", data.summary);
+            if (totalDetectionsCardEl) totalDetectionsCardEl.textContent = data.summary.total_24h || '0';
+            if (withHelmetCardEl) withHelmetCardEl.textContent = data.summary.with_helmet_24h || '0';
+            if (withoutHelmetCardEl) withoutHelmetCardEl.textContent = data.summary.without_helmet_24h || '0';
+          }
+
+          // Guardar resultados de ESTA ejecución para el botón de la cámara.
+          const infractions = data.infracciones || [];
+          detectionResults[currentCameraNumber] = infractions;
+
+          const detections = data.detecciones || [];
+          allDetections[currentCameraNumber] = detections;
+
+          // Actualizar el botón específico de la cámara que se procesó.
+          updateDashboardCameraButton(currentCameraNumber);
+
+          // Generar notificación final con el resumen de la ejecución actual.
+          const totalDetectionsInRun = detections.length;
+          if (totalDetectionsInRun === 0) {
+            showNotification(`ℹ️ No se detectaron motorizados en el video de la Cámara ${currentCameraNumber}`, "info");
+          } else {
+            const infractionsInRun = infractions.length;
+            const compliantInRun = totalDetectionsInRun - infractionsInRun;
+            showNotification(`Cámara ${currentCameraNumber}: ${compliantInRun} con casco ✅, ${infractionsInRun} sin casco 🚨`, "success");
+          }
+
+          setTimeout(() => {
+            closeModal();
+          }, 3000);
+        }
+      };
+
+      websocket.onerror = (err) => {
+        console.error("❌ WebSocket error:", err);
+        showNotification("Error en la conexión con el servidor de análisis", "error");
+        closeModal();
+      };
+
+      websocket.onclose = () => {
+        console.log("🔌 Conexión WebSocket cerrada");
+      };
+    }
+
+    // === MODAL MANAGEMENT ===
+    const openModal = (data) => {
+      currentCameraNumber = data.numero;
+      modal.querySelector("#modal-camera-name").textContent = data.nombre;
+
+      const videoWrapper = modal.querySelector("#modal-video-wrapper");
+      const placeholder = modal.querySelector("#modal-placeholder");
+      const form = modal.querySelector("[data-detect-form]");
+
+      if (data.fuente === "archivo" && data.video) {
+        videoWrapper.classList.remove("hidden");
+        placeholder.classList.add("hidden");
+        videoWrapper.querySelector("video").src = data.video;
+        if (form) form.classList.remove("hidden");
+        modal.querySelector("[data-detect-unavailable]").classList.add("hidden");
+      } else {
+        videoWrapper.classList.add("hidden");
+        placeholder.classList.remove("hidden");
+        if (form) form.classList.add("hidden");
+        modal.querySelector("[data-detect-unavailable]").classList.remove("hidden");
+      }
+
+      if (form) {
+        form.action = modal.dataset.detectTemplate.replace("/0/", `/${data.numero}/`);
+      }
+
+      modal.classList.remove("hidden");
+      document.body.classList.add("overflow-hidden");
+    };
+
+    const closeModal = () => {
+      if (modal.classList.contains("hidden")) return;
+
+      modal.classList.add("hidden");
+      document.body.classList.remove("overflow-hidden");
+      processingOverlay.classList.add("hidden");
+      detectionCounter.classList.add("hidden");
+
+      if (websocket) {
+        websocket.close();
+        websocket = null;
+      }
+
+      const btn = modal.querySelector('[data-detect-form] button[type="submit"]');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined text-base">play_circle</span> Ejecutar Detección';
+      }
+
+      currentCameraNumber = null;
+    };
+
+    const openInfractionsModal = () => {
+      infractionsModal.classList.remove('hidden');
+      document.body.classList.add("overflow-hidden");
+    };
+
+    const closeInfractionsModal = () => {
+      infractionsModal.classList.add('hidden');
+      document.body.classList.remove("overflow-hidden");
+    };
+
+    const updateDashboardCameraButton = (cameraNum) => {
+      const placeholder = document.querySelector(`#camera-card-${cameraNum} .infractions-button-placeholder`);
+      if (!placeholder) return;
+
+      placeholder.innerHTML = "";
+
+      // Obtener TODAS las detecciones de esta cámara
+      const detections = allDetections[cameraNum] || [];
+      const infractions = detectionResults[cameraNum] || [];
+
+      const withHelmet = detections.filter(d => d.usa_casco).length;
+      const withoutHelmet = infractions.length;
+
+      if (detections.length === 0) {
+        placeholder.innerHTML = '<p class="text-xs text-gray-500">No hay detecciones</p>';
+        return;
+      }
+
+      // Crear contenedor de botones
+      const container = document.createElement("div");
+      container.className = "flex flex-col gap-2 w-full";
+
+      // Botón de infracciones (si hay)
+      if (withoutHelmet > 0) {
+        const infBtn = document.createElement("button");
+        infBtn.className = "inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-red-700 w-full";
+        infBtn.innerHTML = `<span class="material-symbols-outlined text-sm">warning</span>🚨 ${withoutHelmet} Infracción(es)`;
+        infBtn.addEventListener("click", () => {
+          renderInfractions(infractions);
+          openInfractionsModal();
+        });
+        container.appendChild(infBtn);
+      }
+
+      // Información de totales
+      const info = document.createElement("div");
+      info.className = "text-xs text-center";
+      info.innerHTML = `<span class="text-green-600 font-semibold">✅ ${withHelmet}</span> | <span class="text-red-600 font-semibold">❌ ${withoutHelmet}</span> | <span class="text-gray-500">Total: ${detections.length}</span>`;
+      container.appendChild(info);
+
+      placeholder.appendChild(container);
+    };
+
+    const renderInfractions = (infractions) => {
+      const grid = infractionsModal.querySelector("#infractions-grid");
+      const noMsg = infractionsModal.querySelector("#no-infractions-message");
+
+      grid.innerHTML = "";
+
+      if (!infractions || infractions.length === 0) {
+        noMsg.classList.remove("hidden");
+        return;
+      }
+
+      noMsg.classList.add("hidden");
+      infractions.forEach(inf => {
+        const card = document.createElement("div");
+        card.className = "bg-white rounded-lg border overflow-hidden shadow-md transition hover:shadow-xl hover:scale-105";
+        card.innerHTML = `
+        <div class="relative">
+          <img src="${inf.imagen_url}" alt="ID ${inf.id}" class="w-full h-48 object-cover">
+          <div class="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 text-xs font-bold rounded-full">SIN CASCO</div>
+        </div>
+        <div class="p-3 space-y-2">
+          <p class="font-semibold text-sm">Infracción ID: ${inf.id}</p>
+          <p class="text-xs text-gray-500">${inf.fecha_hora}</p>
+          <p class="text-xs text-gray-600">Confianza: ${Math.round(inf.confianza)}%</p>
+          ${inf.pdf_url ? `<a href="${inf.pdf_url}" target="_blank" class="mt-2 flex items-center justify-center gap-2 w-full bg-red-600 hover:bg-red-700 text-white px-3 py-2 text-sm font-semibold rounded-lg transition">
+            <span class="material-symbols-outlined text-base">download</span>Ver PDF
+          </a>` : '<p class="text-xs text-gray-500 italic">PDF no disponible</p>'}
+        </div>
+      `;
+        grid.appendChild(card);
+      });
+    };
+
+    // === EVENT LISTENERS ===
+    document.querySelectorAll("[data-camera-trigger]").forEach(el => {
+      el.addEventListener("click", () => openModal(el.dataset));
+    });
+
+    modal.querySelectorAll("[data-close-modal]").forEach(el => {
+      el.addEventListener("click", closeModal);
+    });
+
+    infractionsModal.querySelectorAll("[data-close-infractions]").forEach(el => {
+      el.addEventListener("click", closeInfractionsModal);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (!infractionsModal.classList.contains('hidden')) {
+          closeInfractionsModal();
+        } else if (!modal.classList.contains('hidden')) {
+          closeModal();
+        }
+      }
+    });
+
+    const detectForm = modal.querySelector("[data-detect-form]");
+    if (detectForm) {
+      detectForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const btn = this.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-base">progress_activity</span> Procesando...';
+
+        const formData = new FormData(this);
+
+        fetch(this.action, {
+          method: "POST",
+          body: formData,
+          headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": formData.get("csrfmiddlewaretoken")
+          }
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              connectWebSocket(data.websocket_url);
+            } else {
+              showNotification(data.message || "Error al iniciar detección", "error");
+              closeModal();
+            }
+          })
+          .catch(err => {
+            console.error("Error en fetch:", err);
+            showNotification("Error de red al iniciar detección", "error");
+            closeModal();
+          });
+      });
+    }
+
+    // === INICIALIZACIÓN ===
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const script = document.getElementById('initial-data-script');
+        if (script && script.textContent.trim()) {
+          detectionResults = JSON.parse(script.textContent);
+          console.log("📊 Datos iniciales cargados:", detectionResults);
+
+          // Simular que allDetections contiene las infracciones cargadas inicialmente
+          Object.keys(detectionResults).forEach(cam => {
+            allDetections[cam] = detectionResults[cam];
+            updateDashboardCameraButton(cam);
+          });
+        }
+      } catch (e) {
+        console.error("❌ Error cargando datos iniciales:", e);
+        detectionResults = {};
+        allDetections = {};
+      }
+    });
+  })();
+</script>
+</body>
+</html>

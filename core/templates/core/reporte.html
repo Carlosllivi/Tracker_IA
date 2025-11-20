@@ -1,0 +1,268 @@
+{% load static %}
+<html class="light" lang="es">
+
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Tracker IA</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#1173d4",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-[#212529] dark:text-slate-50">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+  <div class="layout-container flex h-full grow flex-col">
+    <div class="flex flex-1 justify-center">
+      <div class="layout-content-container flex flex-col max-w-[1200px] flex-1">
+        <header
+                class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#e7edf3] dark:border-background-dark px-10 py-3">
+          <div class="flex items-center gap-4 text-[#0d141b] dark:text-slate-50">
+            <div class="size-6">
+              <img src="{% static 'images/TRACKER IA.png' %}" alt="Logo Tracker IA" width="160" height="160">
+            </div>
+            <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">TRACKER IA</h2>
+          </div>
+          <div class="flex flex-1 justify-end gap-8">
+            <div class="flex items-center gap-9">
+              <a class="text-[#0d141b] dark:text-slate-50 text-sm font-medium leading-normal"
+                 href="{% url 'panel' %}">Panel de Control</a>
+              <a class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal"
+                 href="{% url 'camaras' %}">Cámaras</a>
+              <a class="text-primary text-sm font-medium leading-normal" href="{% url 'reportes' %}">Reportes</a>
+              {% if request.user.is_superuser %}
+                <a class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal"
+                   href="{% url 'usuarios' %}">Usuarios</a>
+              {% endif %}
+            </div>
+            <div class="flex items-center gap-2">
+              <a href="{% url 'logout' %}"
+                 class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]">
+                <span class="truncate">Cerrar Sesión</span>
+              </a>
+            </div>
+          </div>
+        </header>
+        <main class="p-10">
+          <div class="flex flex-wrap justify-between gap-3 mb-8">
+            <p class="text-[#0d141b] dark:text-slate-50 text-4xl font-black leading-tight tracking-[-0.033em]">
+              Gestión de Reportes</p>
+            {% if puede_generar %}
+              <form method="post" action="{% url 'generar_reporte_diario' %}"
+                    class="flex items-center gap-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 px-4 py-3">
+                {% csrf_token %}
+                <div class="flex flex-col">
+                  <label for="fecha_generacion" class="text-xs text-gray-500 dark:text-gray-400">Fecha a generar</label>
+                  <input id="fecha_generacion" name="fecha" type="date" value="{{ fecha_generacion_default }}"
+                         class="mt-1 h-9 rounded-md border border-gray-200 dark:border-gray-700 bg-transparent px-3 text-sm focus:border-primary focus:ring-primary"/>
+                </div>
+                <button type="submit"
+                        class="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white text-sm font-semibold">
+                  <span class="material-symbols-outlined text-base">picture_as_pdf</span>
+                  Generar reporte del día
+                </button>
+              </form>
+            {% endif %}
+          </div>
+
+          {% if messages %}
+            <div class="space-y-2 mb-6">
+              {% for message in messages %}
+                <div class="rounded-lg border px-4 py-3 text-sm {% if message.tags == 'success' %}border-green-200 bg-green-50 text-green-700{% elif message.tags == 'error' %}border-red-200 bg-red-50 text-red-700{% else %}border-gray-200 bg-white dark:bg-gray-800 dark:text-gray-200{% endif %}">
+                  {{ message }}
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          {#            <form method="get"#}
+          {#              class="flex flex-col gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-4">#}
+          {#              <div class="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-4">#}
+          {#                <label class="flex flex-col text-sm text-gray-600 dark:text-gray-400">#}
+          {#                  <span>Fecha inicio</span>#}
+          {#                  <input type="date" name="fecha_inicio" value="{{ fecha_inicio|default:'' }}"#}
+          {#                    class="mt-1 h-10 rounded-md border border-gray-200 dark:border-gray-700 bg-transparent px-3 text-sm focus:border-primary focus:ring-primary" />#}
+          {#                </label>#}
+          {#                <label class="flex flex-col text-sm text-gray-600 dark:text-gray-400">#}
+          {#                  <span>Fecha fin</span>#}
+          {#                  <input type="date" name="fecha_fin" value="{{ fecha_fin|default:'' }}"#}
+          {#                    class="mt-1 h-10 rounded-md border border-gray-200 dark:border-gray-700 bg-transparent px-3 text-sm focus:border-primary focus:ring-primary" />#}
+          {#                </label>#}
+          {#                <div class="flex items-end gap-2">#}
+          {#                  <button type="submit"#}
+          {#                    class="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white">#}
+          {#                    <span class="material-symbols-outlined text-base">tune</span>#}
+          {#                    Filtrar#}
+          {#                  </button>#}
+          {#                  <a href="{% url 'reportes' %}"#}
+          {#                    class="flex h-10 items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 px-4 text-sm font-semibold text-gray-600 dark:text-gray-200">#}
+          {#                    Limpiar#}
+          {#                  </a>#}
+          {#                </div>#}
+          {#              </div>#}
+          {#            </form>#}
+          <form method="get"
+                class="flex flex-col gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-4">
+            <div class="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <label class="flex flex-col text-sm text-gray-600 dark:text-gray-400">
+                <span>Fecha inicio</span>
+                <input type="date" name="fecha_inicio" value="{{ fecha_inicio|default:'' }}"
+                       class="mt-1 h-10 rounded-md border border-gray-200 dark:border-gray-700 bg-transparent px-3 text-sm focus:border-primary focus:ring-primary"/>
+              </label>
+
+              <label class="flex flex-col text-sm text-gray-600 dark:text-gray-400">
+                <span>Fecha fin</span>
+                <input type="date" name="fecha_fin" value="{{ fecha_fin|default:'' }}"
+                       class="mt-1 h-10 rounded-md border border-gray-200 dark:border-gray-700 bg-transparent px-3 text-sm focus:border-primary focus:ring-primary"/>
+              </label>
+
+              <!-- Contenedor de botones alineado a la derecha -->
+              <div class="flex items-end justify-end pr-6 gap-2">
+                <button type="submit"
+                        class="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white">
+                  <span class="material-symbols-outlined text-base">tune</span>
+                  Filtrar
+                </button>
+
+                <a href="{% url 'reportes' %}"
+                   class="flex h-10 items-center justify-center rounded-lg border border-gray-200 dark:border-gray-700 px-4 text-sm font-semibold text-gray-600 dark:text-gray-200">
+                  Limpiar
+                </a>
+              </div>
+            </div>
+          </form>
+
+          <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3">
+              <p class="text-sm text-gray-500 dark:text-gray-400">Reportes listados</p>
+              <p class="text-2xl font-bold text-[#0d141b] dark:text-slate-50">{{ reportes_count }}</p>
+            </div>
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3">
+              <p class="text-sm text-gray-500 dark:text-gray-400">Total vehículos</p>
+              <p class="text-2xl font-bold text-[#0d141b] dark:text-slate-50">{{ total_vehiculos }}</p>
+            </div>
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3">
+              <p class="text-sm text-gray-500 dark:text-gray-400">Total infractores</p>
+              <p class="text-2xl font-bold text-[#0d141b] dark:text-slate-50">{{ total_infractores }}</p>
+            </div>
+            <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3">
+              <p class="text-sm text-gray-500 dark:text-gray-400">Cumplimiento promedio</p>
+              <p class="text-2xl font-bold text-[#0d141b] dark:text-slate-50">{{ cumplimiento_global|floatformat:2 }}%</p>
+            </div>
+          </div>
+
+          <div class="mt-8 px-4 py-3 @container">
+            <div
+                    class="flex overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+              <table class="flex-1 text-sm">
+                <thead>
+                <tr class="bg-gray-50 dark:bg-gray-900/50">
+                  <th
+                          class="px-4 py-3 text-left text-gray-800 dark:text-gray-300 w-[140px] text-sm font-medium leading-normal">
+                    Fecha
+                  </th>
+                  {#                      <th#}
+                  {#                        class="px-4 py-3 text-left text-gray-800 dark:text-gray-300 text-sm font-medium leading-normal">#}
+                  {#                        Cámara</th>#}
+                  <th
+                          class="px-4 py-3 text-center text-gray-800 dark:text-gray-300 w-[140px] text-sm font-medium leading-normal">
+                    Vehículos
+                  </th>
+                  <th
+                          class="px-4 py-3 text-center text-gray-800 dark:text-gray-300 w-[140px] text-sm font-medium leading-normal">
+                    Con casco
+                  </th>
+                  <th
+                          class="px-4 py-3 text-center text-gray-800 dark:text-gray-300 w-[140px] text-sm font-medium leading-normal">
+                    Infractores
+                  </th>
+                  <th
+                          class="px-4 py-3 text-center text-gray-800 dark:text-gray-300 w-[140px] text-sm font-medium leading-normal">
+                    Cumplimiento
+                  </th>
+                  <th
+                          class="px-4 py-3 text-center text-gray-800 dark:text-gray-300 w-56 text-sm font-medium leading-normal">
+                    Acciones
+                  </th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if reportes %}
+                  {% for reporte in reportes %}
+                    <tr class="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ reporte.fecha|date:"d/m/Y" }}</td>
+                      {#                      <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ reporte.camara.numero }} - {{ reporte.camara.nombre }}</td>#}
+                      <td class="px-4 py-3 text-center text-gray-600 dark:text-gray-300">{{ reporte.total_vehiculos }}</td>
+                      <td class="px-4 py-3 text-center text-gray-600 dark:text-gray-300">{{ reporte.total_con_casco }}</td>
+                      <td class="px-4 py-3 text-center text-gray-600 dark:text-gray-300">{{ reporte.total_infractores }}</td>
+                      <td class="px-4 py-3 text-center text-gray-600 dark:text-gray-300">{{ reporte.porcentaje_cumplimiento|floatformat:2 }}%</td>
+                      <td class="px-4 py-3">
+                        <div class="flex items-center justify-center gap-3">
+                          {% if reporte.archivo_pdf %}
+                            <a href="{{ reporte.archivo_pdf.url }}" target="_blank"
+                               class="flex items-center gap-1 rounded-lg border border-primary px-3 py-2 text-primary font-semibold hover:bg-primary hover:text-white">
+                              <span class="material-symbols-outlined text-base">download</span>
+                              Ver PDF
+                            </a>
+                          {% endif %}
+                          {% if puede_generar and not reporte.archivo_pdf %}
+                            <form method="post" action="{% url 'generar_reporte_diario' %}">
+                              {% csrf_token %}
+                              <input type="hidden" name="fecha" value="{{ reporte.fecha|date:'Y-m-d' }}"/>
+                              <button type="submit"
+                                      class="flex items-center gap-1 rounded-lg bg-primary px-3 py-2 text-white font-semibold">
+                                <span class="material-symbols-outlined text-base">picture_as_pdf</span>
+                                Generar
+                              </button>
+                            </form>
+                          {% endif %}
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="7" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                      No se encontraron reportes con los filtros aplicados.
+                    </td>
+                  </tr>
+                {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          {% if ultimo_reporte %}
+            <p class="mt-4 text-xs text-gray-500 dark:text-gray-400">Último reporte
+              generado: {{ ultimo_reporte.fecha|date:"d/m/Y" }}</p>
+          {% endif %}
+        </main>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acceso restringido</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100 text-[#0d141b]">
+  <div class="min-h-screen flex items-center justify-center px-4">
+    <div class="max-w-xl w-full bg-white rounded-2xl shadow-lg border border-gray-200 p-10 text-center">
+      <span class="material-symbols-outlined text-6xl text-red-500">block</span>
+      <h1 class="text-3xl font-bold mt-4">Acceso restringido</h1>
+      <p class="mt-2 text-gray-600">
+        No cuentas con permisos para ejecutar esta acción. Si crees que se trata de un error, comunícate con un administrador del sistema.
+      </p>
+      <a href="{% url 'panel' %}" class="mt-6 inline-flex items-center justify-center gap-2 px-5 py-2 bg-primary text-white rounded-lg">
+        <span class="material-symbols-outlined">home</span>
+        Volver al panel
+      </a>
+    </div>
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,487 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="light" lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Gestión de Usuarios - Tracker IA</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#1173d4",
+            "background-light": "#f6f7f8",
+            "background-dark": "#101922",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"],
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px",
+          },
+        },
+      },
+    }
+  </script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-[#212529] dark:text-slate-50">
+  <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+    <div class="flex flex-1 justify-center">
+      <div class="flex w-full max-w-[1200px] flex-col">
+        <header class="flex items-center justify-between border-b border-[#e7edf3] dark:border-background-dark px-10 py-3">
+          <div class="flex items-center gap-4 text-[#0d141b] dark:text-slate-50">
+            <div class="size-6">
+              <img src="{% static 'images/TRACKER IA.png' %}" alt="Cámara de seguridad" width="400" height="400">
+            </div>
+            <h2 class="text-lg font-bold leading-tight tracking-[-0.015em]">TRACKER IA</h2>
+          </div>
+          <div class="flex flex-1 justify-end gap-8">
+            <div class="flex items-center gap-9">
+              <a class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal hover:text-[#0d141b] dark:hover:text-slate-50"
+                href="{% url 'panel' %}">Panel de Control</a>
+              {% if perms.core.view_camara %}
+              <a class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal hover:text-[#0d141b] dark:hover:text-slate-50"
+                href="{% url 'camaras' %}">Camaras</a>
+              {% endif %}
+              {% if perms.core.view_reportediario %}
+              <a class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-normal hover:text-[#0d141b] dark:hover:text-slate-50"
+                href="{% url 'reportes' %}">Reportes</a>
+              {% endif %}
+              <a class="text-[#0d141b] dark:text-slate-50 text-sm font-semibold leading-normal"
+                href="{% url 'usuarios' %}">Usuarios</a>
+            </div>
+            <div class="flex items-center gap-2">
+              <a href="{% url 'logout' %}"
+                class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]">
+                <span class="truncate">Cerrar sesión</span>
+              </a>
+            </div>
+        </header>
+        <main class="p-10">
+          <form id="csrf-form" class="hidden">
+            {% csrf_token %}
+          </form>
+
+          <div class="mb-8 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Administración</p>
+              <h1 class="text-4xl font-black leading-tight tracking-[-0.033em] text-[#0d141b] dark:text-slate-50">
+                Gestión de Usuarios y Permisos
+              </h1>
+              <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Selecciona un usuario a la izquierda y ajusta su rol,
+                grupo y permisos en la sección de detalle.</p>
+            </div>
+          </div>
+
+          {% if usuarios %}
+          <div class="grid gap-6 lg:grid-cols-[320px,1fr]">
+            <aside class="rounded-xl border border-[#cfdbe7] bg-white dark:border-gray-700 dark:bg-background-dark">
+              <div class="border-b border-[#cfdbe7] px-5 py-4 dark:border-gray-700">
+                <h2 class="text-base font-semibold text-[#0d141b] dark:text-slate-50">Usuarios registrados</h2>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Selecciona un usuario para gestionar su acceso.</p>
+              </div>
+              <div data-user-list class="max-h-[540px] overflow-y-auto">
+                {% for usuario in usuarios %}
+                <button type="button" data-user-trigger data-user-id="{{ usuario.id }}"
+                  class="flex w-full items-start gap-3 border-b border-[#edf2f7] px-5 py-4 text-left hover:bg-gray-50 focus:outline-none focus-visible:bg-blue-50 dark:border-gray-700 dark:hover:bg-gray-800">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold uppercase">
+                    {{ usuario.get_initials|default:usuario.username|first|upper }}
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                      <p class="text-sm font-semibold text-[#0d141b] dark:text-slate-50" data-user-list-name>{{ usuario.get_full_name|default:usuario.username }}</p>
+                      {% if usuario.is_superuser %}
+                      <span class="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-purple-700 dark:bg-purple-900/40 dark:text-purple-200">
+                        <span class="material-symbols-outlined text-[12px]">star</span>Superusuario
+                      </span>
+                      {% endif %}
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400" data-user-list-email>{{ usuario.email }}</p>
+                    <p class="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-primary uppercase" data-user-list-rol>
+                      <span class="material-symbols-outlined text-[12px]">verified_user</span>
+                      <span data-user-list-rol-text>{{ usuario.get_rol_display }}</span>
+                    </p>
+                  </div>
+                </button>
+                {% endfor %}
+              </div>
+            </aside>
+
+            <section data-user-editor class="rounded-xl border border-[#cfdbe7] bg-white p-6 dark:border-gray-700 dark:bg-background-dark">
+              <div data-user-empty class="flex flex-col items-center justify-center gap-4 py-16 text-center text-gray-500 dark:text-gray-400 hidden">
+                <span class="material-symbols-outlined text-6xl">group</span>
+                <p class="text-base font-semibold">Selecciona un usuario para comenzar</p>
+                <p class="text-sm">Haz clic en un usuario del listado izquierdo para ver sus permisos.</p>
+              </div>
+
+              <div data-user-details class="hidden space-y-6">
+                <header class="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <h2 class="text-2xl font-bold text-[#0d141b] dark:text-slate-50" data-user-name></h2>
+                    <p class="text-sm text-gray-500" data-user-email></p>
+                    <span data-superuser-badge
+                      class="mt-3 inline-flex items-center gap-2 rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold uppercase text-purple-700 dark:bg-purple-900/40 dark:text-purple-200 hidden">
+                      <span class="material-symbols-outlined text-sm">shield_lock</span>
+                      Superusuario con acceso total
+                    </span>
+                  </div>
+                  <button type="button" data-save-user
+                    class="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/40">
+                    <span class="material-symbols-outlined text-base">save</span>
+                    Guardar cambios
+                  </button>
+                </header>
+
+                <div class="grid gap-6 lg:grid-cols-2">
+                  <div class="space-y-4">
+                    <div>
+                      <label for="user-role-select" class="text-sm font-semibold text-[#0d141b] dark:text-slate-50">Rol
+                        del sistema</label>
+                      <select id="user-role-select"
+                        class="mt-2 w-full rounded-lg border border-gray-300 bg-white py-2 pl-3 pr-8 text-sm font-medium text-gray-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">
+                        {% for value, label in rol_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <div>
+                      <label for="user-group-select" class="text-sm font-semibold text-[#0d141b] dark:text-slate-50">Grupo
+                        asignado</label>
+                      <select id="user-group-select"
+                        class="mt-2 w-full rounded-lg border border-gray-300 bg-white py-2 pl-3 pr-8 text-sm font-medium text-gray-700 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">
+                        <option value="">Sin grupo</option>
+                        {% for grupo in grupos %}
+                        <option value="{{ grupo.name }}">{{ grupo.name }}</option>
+                        {% endfor %}
+                      </select>
+                      <p data-permission-level class="mt-2 text-xs font-semibold uppercase tracking-wide text-gray-500"></p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <p class="text-sm font-semibold text-[#0d141b] dark:text-slate-50">Resumen</p>
+                    <ul class="mt-2 space-y-1 text-sm text-gray-500 dark:text-gray-400">
+                      <li class="flex items-center gap-2"><span class="material-symbols-outlined text-base">verified</span>
+                        <span>Administrador: permisos altos (crear, editar, eliminar).</span></li>
+                      <li class="flex items-center gap-2"><span class="material-symbols-outlined text-base">inventory</span>
+                        <span>Operador: permisos medios (seguimiento y visualización de alertas).</span></li>
+                      <li class="flex items-center gap-2"><span class="material-symbols-outlined text-base">visibility</span>
+                        <span>Visualizador: permisos bajos (solo lectura de cámaras y reportes).</span></li>
+                    </ul>
+                  </div>
+                </div>
+
+                <section class="space-y-5">
+                  <h3 class="text-lg font-semibold text-[#0d141b] dark:text-slate-50">Permisos disponibles</h3>
+                  {% for section in permission_sections %}
+                  <div data-permission-section data-level="{{ section.level }}"
+                    class="rounded-lg border border-[#e5ecf4] bg-slate-50/60 p-4 dark:border-gray-700 dark:bg-gray-800/40">
+                    <div class="flex items-center justify-between">
+                      <p class="text-sm font-semibold text-[#0d141b] dark:text-slate-50">
+                        {{ section.label }}
+                      </p>
+                      <span
+                        class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-[11px] font-semibold uppercase text-primary">{{ section.level|title }}</span>
+                    </div>
+                    <div class="mt-3 grid gap-2">
+                      {% for permiso in section.permisos %}
+                      <label class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                        <input type="checkbox" value="{{ permiso.codename }}" data-permission-checkbox
+                          class="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary">
+                        <span>{{ permiso.name }}</span>
+                      </label>
+                      {% empty %}
+                      <p class="text-sm text-gray-500">No hay permisos registrados para esta sección.</p>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  {% endfor %}
+                </section>
+
+                <p data-feedback class="text-xs"></p>
+              </div>
+            </section>
+          </div>
+          {% else %}
+          <div class="rounded-xl border border-dashed border-gray-300 bg-white p-12 text-center text-gray-500 dark:border-gray-700 dark:bg-background-dark dark:text-gray-300">
+            <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600">group_off</span>
+            <h2 class="mt-4 text-2xl font-semibold">No hay usuarios registrados</h2>
+            <p class="mt-2 text-sm">Cuando se registren usuarios aparecerán aquí para asignar roles y permisos.</p>
+          </div>
+          {% endif %}
+        </main>
+      </div>
+    </div>
+  </div>
+
+  {% if usuarios %}
+  <script id="usuarios-json" type="application/json">{{ usuarios_json|safe }}</script>
+  <script id="group-permissions-json" type="application/json">{{ group_permissions_json|safe }}</script>
+  <script id="role-group-json" type="application/json">{{ role_group_json|safe }}</script>
+  <script id="group-level-json" type="application/json">{{ group_level_json|safe }}</script>
+  {% endif %}
+
+  <script>
+    (function () {
+      const submitUrl = "{% url 'actualizar_usuario_permisos' %}";
+      const csrfInput = document.querySelector('#csrf-form input[name="csrfmiddlewaretoken"]');
+      const csrfToken = csrfInput ? csrfInput.value : '';
+
+      const usersData = document.getElementById('usuarios-json');
+      const groupPermissionsData = document.getElementById('group-permissions-json');
+      const roleGroupData = document.getElementById('role-group-json');
+      const groupLevelData = document.getElementById('group-level-json');
+
+      const users = usersData ? JSON.parse(usersData.textContent) : [];
+      const groupPermissions = groupPermissionsData ? JSON.parse(groupPermissionsData.textContent) : {};
+      const roleGroupMap = roleGroupData ? JSON.parse(roleGroupData.textContent) : {};
+      const groupLevelInfo = groupLevelData ? JSON.parse(groupLevelData.textContent) : {};
+
+      const userList = document.querySelector('[data-user-list]');
+      if (!userList) {
+        return;
+      }
+      const userButtons = Array.from(userList.querySelectorAll('[data-user-trigger]'));
+      const editor = document.querySelector('[data-user-editor]');
+      const emptyState = editor ? editor.querySelector('[data-user-empty]') : null;
+      const detailsSection = editor ? editor.querySelector('[data-user-details]') : null;
+      const nameEl = editor ? editor.querySelector('[data-user-name]') : null;
+      const emailEl = editor ? editor.querySelector('[data-user-email]') : null;
+      const superBadge = editor ? editor.querySelector('[data-superuser-badge]') : null;
+      const roleSelect = document.getElementById('user-role-select');
+      const groupSelect = document.getElementById('user-group-select');
+      const levelLabel = editor ? editor.querySelector('[data-permission-level]') : null;
+      const permissionSections = editor ? Array.from(editor.querySelectorAll('[data-permission-section]')) : [];
+      const permissionCheckboxes = editor ? Array.from(editor.querySelectorAll('[data-permission-checkbox]')) : [];
+      const saveButton = editor ? editor.querySelector('[data-save-user]') : null;
+      const feedback = editor ? editor.querySelector('[data-feedback]') : null;
+
+      let selectedUserId = null;
+
+      if (!editor || !roleSelect || !groupSelect || !saveButton) {
+        return;
+      }
+
+      function getUserById(id) {
+        return users.find((user) => user.id === id);
+      }
+
+      function setActiveUserButton(id) {
+        userButtons.forEach((button) => {
+          button.classList.toggle('bg-blue-50', Number(button.dataset.userId) === id);
+          button.classList.toggle('dark:bg-primary/10', Number(button.dataset.userId) === id);
+        });
+      }
+
+      function setPermissionCheckboxes(codenames) {
+        const target = new Set(codenames);
+        permissionCheckboxes.forEach((checkbox) => {
+          checkbox.checked = target.has(checkbox.value);
+        });
+      }
+
+      function highlightPermissionSections(level) {
+        permissionSections.forEach((section) => {
+          const isActive = section.dataset.level === level;
+          section.classList.toggle('border-primary', isActive);
+          section.classList.toggle('ring-2', isActive);
+          section.classList.toggle('ring-primary/40', isActive);
+        });
+      }
+
+      function updateLevelInfo(groupName) {
+        const info = groupLevelInfo[groupName] || null;
+        if (levelLabel) {
+          levelLabel.textContent = info ? info.label : '';
+        }
+        highlightPermissionSections(info ? info.level : null);
+      }
+
+      function applyGroupPermissions(groupName) {
+        if (!groupName || !(groupName in groupPermissions)) {
+          return;
+        }
+        setPermissionCheckboxes(groupPermissions[groupName]);
+      }
+
+      function permissionStringsToCodenames(permissions) {
+        return permissions.map((perm) => {
+          const parts = String(perm).split('.');
+          return parts.length ? parts[parts.length - 1] : perm;
+        });
+      }
+
+      function populateUser(user) {
+        if (!user) {
+          return;
+        }
+        selectedUserId = user.id;
+        if (emptyState) {
+          emptyState.classList.add('hidden');
+        }
+        if (detailsSection) {
+          detailsSection.classList.remove('hidden');
+        }
+
+        if (nameEl) {
+          nameEl.textContent = user.full_name || user.username;
+        }
+        if (emailEl) {
+          emailEl.textContent = user.email || 'Sin correo registrado';
+        }
+        if (superBadge) {
+          superBadge.classList.toggle('hidden', !user.is_superuser);
+        }
+
+        if (roleSelect) {
+          roleSelect.value = user.rol;
+        }
+
+        const userGroup = user.groups && user.groups.length ? user.groups[0] : (roleGroupMap[user.rol] || '');
+        if (groupSelect) {
+          groupSelect.value = userGroup || '';
+        }
+        updateLevelInfo(groupSelect.value);
+
+        const permissionCodenames = permissionStringsToCodenames(user.permissions || []);
+        setPermissionCheckboxes(permissionCodenames);
+
+        setActiveUserButton(user.id);
+        updateUserSummary(user);
+      }
+
+      function updateUserSummary(user) {
+        const button = userButtons.find((btn) => Number(btn.dataset.userId) === user.id);
+        if (!button) {
+          return;
+        }
+        const roleWrapper = button.querySelector('[data-user-list-rol-text]');
+        if (roleWrapper) {
+          const option = roleSelect.querySelector(`option[value="${user.rol}"]`);
+          roleWrapper.textContent = option ? option.textContent : user.rol;
+        }
+      }
+
+      function getSelectedPermissionValues() {
+        return permissionCheckboxes
+          .filter((checkbox) => checkbox.checked)
+          .map((checkbox) => checkbox.value);
+      }
+
+      async function saveCurrentUser() {
+        if (!selectedUserId) {
+          return;
+        }
+        const payload = {
+          user_id: selectedUserId,
+          rol: roleSelect.value,
+          groups: groupSelect.value ? [groupSelect.value] : [],
+          permissions: getSelectedPermissionValues(),
+        };
+
+        if (feedback) {
+          feedback.textContent = 'Guardando cambios...';
+          feedback.className = 'text-xs text-gray-500';
+        }
+        saveButton.disabled = true;
+        saveButton.classList.add('opacity-60');
+
+        try {
+          const response = await fetch(submitUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await response.json();
+          if (!response.ok || !data.success) {
+            throw new Error(data.message || 'No se pudo actualizar el usuario.');
+          }
+
+          if (feedback) {
+            feedback.textContent = data.message || 'Cambios guardados correctamente.';
+            feedback.className = 'text-xs font-semibold text-green-600';
+          }
+
+          const user = getUserById(selectedUserId);
+          if (user) {
+            user.rol = payload.rol;
+            user.groups = payload.groups;
+            user.permissions = (data.data && data.data.permissions) ? data.data.permissions.map((codename) => `core.${codename}`) : payload.permissions.map((codename) => `core.${codename}`);
+            updateUserSummary(user);
+          }
+        } catch (error) {
+          if (feedback) {
+            feedback.textContent = error.message || 'Error inesperado.';
+            feedback.className = 'text-xs font-semibold text-red-600';
+          }
+        } finally {
+          saveButton.disabled = false;
+          saveButton.classList.remove('opacity-60');
+        }
+      }
+
+      function handleUserSelection(event) {
+        const trigger = event.target.closest('[data-user-trigger]');
+        if (!trigger) {
+          return;
+        }
+        const userId = Number(trigger.dataset.userId);
+        const user = getUserById(userId);
+        if (!user) {
+          return;
+        }
+        if (feedback) {
+          feedback.textContent = '';
+          feedback.className = 'text-xs';
+        }
+        populateUser(user);
+      }
+
+      function handleRoleChange() {
+        if (!selectedUserId) {
+          return;
+        }
+        const mappedGroup = roleGroupMap[roleSelect.value];
+        if (mappedGroup && groupSelect) {
+          groupSelect.value = mappedGroup;
+        }
+        updateLevelInfo(groupSelect.value);
+        applyGroupPermissions(groupSelect.value);
+      }
+
+      function handleGroupChange() {
+        if (!selectedUserId) {
+          return;
+        }
+        updateLevelInfo(groupSelect.value);
+        applyGroupPermissions(groupSelect.value);
+      }
+
+      userList.addEventListener('click', handleUserSelection);
+      roleSelect.addEventListener('change', handleRoleChange);
+      groupSelect.addEventListener('change', handleGroupChange);
+      saveButton.addEventListener('click', saveCurrentUser);
+
+      if (users.length) {
+        populateUser(users[0]);
+      } else if (emptyState) {
+        emptyState.classList.remove('hidden');
+      }
+    })();
+  </script>
+</body>
+</html>

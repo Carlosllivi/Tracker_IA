@@ -1,0 +1,279 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="light" lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Editar Cámara - Tracker IA</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1173d4",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101922",
+            },
+            fontFamily: {
+              display: ["Inter"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-background-light dark:bg-background-dark font-display">
+    <div
+      class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden"
+    >
+      <div class="layout-container flex h-full grow flex-col">
+        <div class="px-4 md:px-10 lg:px-40 flex flex-1 justify-center py-5">
+          <div
+            class="layout-content-container flex flex-col max-w-[960px] flex-1"
+          >
+            <!-- Botón Volver -->
+            <div class="flex px-4 py-3 justify-end">
+              <a
+                href="{% url 'camaras' %}"
+                class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-transparent text-[#0d141b] dark:text-slate-50 gap-2 pl-4 text-sm font-bold leading-normal tracking-[0.015em] hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              >
+                <span class="material-symbols-outlined">arrow_back</span>
+                <span class="truncate">Volver a Cámaras</span>
+              </a>
+            </div>
+
+            <!-- Formulario -->
+            <div class="flex flex-1 justify-center items-center">
+              <div
+                class="bg-white dark:bg-background-dark rounded-xl shadow-lg p-8 w-full max-w-2xl"
+              >
+                <div class="flex flex-col items-center mb-6">
+                  <div
+                    class="w-full gap-1 overflow-hidden bg-slate-50 dark:bg-background-dark aspect-square rounded-lg flex items-center justify-center mb-4 max-w-[120px]"
+                  >
+                    <span
+                      class="material-symbols-outlined text-primary"
+                      style="font-size: 80px"
+                      >videocam</span
+                    >
+                  </div>
+                  <h2
+                    class="text-[#0d141b] dark:text-slate-50 tracking-light text-[28px] font-bold leading-tight text-center pb-3"
+                  >
+                    Editar Cámara
+                  </h2>
+                  <p class="text-gray-500 dark:text-gray-400 text-center">
+                    Modifica los datos de la cámara y guarda los cambios
+                  </p>
+                </div>
+
+                <!-- Mensajes -->
+                {% if messages %}
+                <div class="mb-4">
+                  {% for message in messages %}
+                  <div
+                    class="p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400{% else %}bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400{% endif %}"
+                  >
+                    {{ message }}
+                  </div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Formulario -->
+                <form method="post" class="space-y-4">
+                  {% csrf_token %}
+
+                  <!-- Nombre -->
+                  <div class="flex flex-col">
+                    <label
+                      class="text-[#0d141b] dark:text-slate-50 text-base font-medium leading-normal pb-2"
+                      for="{{ form.nombre.id_for_label }}"
+                    >
+                      {{ form.nombre.label }}
+                      <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.nombre }} {% if form.nombre.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                      {{ form.nombre.errors.0 }}
+                    </p>
+                    {% endif %}
+                  </div>
+
+                  <!-- Ubicación -->
+                  <div class="flex flex-col">
+                    <label
+                      class="text-[#0d141b] dark:text-slate-50 text-base font-medium leading-normal pb-2"
+                      for="{{ form.ubicacion.id_for_label }}"
+                    >
+                      {{ form.ubicacion.label }}
+                    </label>
+                    {{ form.ubicacion }} {% if form.ubicacion.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                      {{ form.ubicacion.errors.0 }}
+                    </p>
+                    {% endif %}
+                  </div>
+
+                  <!-- Fuente de video -->
+                  <div class="flex flex-col">
+                    <label
+                      class="text-[#0d141b] dark:text-slate-50 text-base font-medium leading-normal pb-2"
+                      for="{{ form.tipo_fuente.id_for_label }}"
+                    >
+                      {{ form.tipo_fuente.label }}
+                      <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.tipo_fuente }}
+                    {% if form.tipo_fuente.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                      {{ form.tipo_fuente.errors.0 }}
+                    </p>
+                    {% elif form.tipo_fuente.help_text %}
+                    <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                      {{ form.tipo_fuente.help_text }}
+                    </p>
+                    {% endif %}
+                  </div>
+
+                  <!-- URL Streaming -->
+                  <div class="flex flex-col" data-field="url_streaming">
+                    <label
+                      class="text-[#0d141b] dark:text-slate-50 text-base font-medium leading-normal pb-2"
+                      for="{{ form.url_streaming.id_for_label }}"
+                    >
+                      {{ form.url_streaming.label }}
+                    </label>
+                    {{ form.url_streaming }}
+                    {% if form.url_streaming.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                      {{ form.url_streaming.errors.0 }}
+                    </p>
+                    {% elif form.url_streaming.help_text %}
+                    <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                      {{ form.url_streaming.help_text }}
+                    </p>
+                    {% endif %}
+                  </div>
+
+                  <!-- Archivo de video -->
+                  <div class="flex flex-col" data-field="archivo_video">
+                    <label
+                      class="text-[#0d141b] dark:text-slate-50 text-base font-medium leading-normal pb-2"
+                      for="{{ form.archivo_video.id_for_label }}"
+                    >
+                      {{ form.archivo_video.label }}
+                    </label>
+                    {{ form.archivo_video }}
+                    {% if form.archivo_video.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                      {{ form.archivo_video.errors.0 }}
+                    </p>
+                    {% elif form.archivo_video.help_text %}
+                    <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                      {{ form.archivo_video.help_text }}
+                    </p>
+                    {% else %}
+                    <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">
+                      Selecciona un <code>.mp4</code> ubicado en <code>static/videos</code>.
+                    </p>
+                    {% endif %}
+                  </div>
+
+                  <!-- Estado -->
+                  <div class="flex flex-col">
+                    <label
+                      class="text-[#0d141b] dark:text-slate-50 text-base font-medium leading-normal pb-2"
+                      for="{{ form.estado.id_for_label }}"
+                    >
+                      {{ form.estado.label }}
+                      <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.estado }} {% if form.estado.errors %}
+                    <p class="text-red-500 text-sm mt-1">
+                      {{ form.estado.errors.0 }}
+                    </p>
+                    {% endif %}
+                  </div>
+
+                  <!-- Habilitada -->
+                  <div class="flex items-center gap-3 py-2">
+                    {{ form.habilitada }}
+                    <label
+                      class="text-[#0d141b] dark:text-slate-50 text-base font-medium leading-normal"
+                      for="{{ form.habilitada.id_for_label }}"
+                    >
+                      {{ form.habilitada.label }}
+                    </label>
+                  </div>
+
+                  <!-- Botones -->
+                  <div class="flex gap-3 pt-4">
+                    <button
+                      type="submit"
+                      class="flex-1 flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-primary text-slate-50 text-base font-bold leading-normal tracking-[0.015em] hover:bg-opacity-90 transition-all"
+                    >
+                      <span class="material-symbols-outlined mr-2">save</span>
+                      <span class="truncate">Actualizar Cámara</span>
+                    </button>
+                    <a
+                      href="{% url 'camaras' %}"
+                      class="flex-1 flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-5 bg-transparent text-red-600 dark:text-red-500 text-base font-bold leading-normal tracking-[0.015em] border-2 border-red-600 dark:border-red-500 hover:bg-red-600/10 dark:hover:bg-red-500/10 transition-all"
+                    >
+                      <span class="material-symbols-outlined mr-2">cancel</span>
+                      <span class="truncate">Cancelar</span>
+                    </a>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        const tipoSelect = document.getElementById('{{ form.tipo_fuente.id_for_label }}');
+        const urlWrapper = document.querySelector('[data-field="url_streaming"]');
+        const videoWrapper = document.querySelector('[data-field="archivo_video"]');
+
+        if (!tipoSelect || !urlWrapper || !videoWrapper) {
+          return;
+        }
+
+        function toggleFields() {
+          const value = tipoSelect.value;
+          if (value === 'stream') {
+            urlWrapper.classList.remove('hidden');
+            videoWrapper.classList.add('hidden');
+          } else if (value === 'archivo') {
+            videoWrapper.classList.remove('hidden');
+            urlWrapper.classList.add('hidden');
+          } else {
+            urlWrapper.classList.remove('hidden');
+            videoWrapper.classList.remove('hidden');
+          }
+        }
+
+        tipoSelect.addEventListener('change', toggleFields);
+        toggleFields();
+      })();
+    </script>
+  </body>
+</html>

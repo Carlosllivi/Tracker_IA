@@ -1,0 +1,384 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html class='light' lang='es'>
+<head>
+  <meta charset='utf-8'/>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
+  <title>Nueva Cámara - Tracker IA</title>
+  <script src='https://cdn.tailwindcss.com?plugins=forms,container-queries'></script>
+  <link href='https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined' rel='stylesheet'/>
+  <link href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap' rel='stylesheet'/>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1173d4',
+            'background-light': '#f6f7f8',
+            'background-dark': '#101922'
+          },
+          fontFamily: {
+            display: ['Inter', 'sans-serif']
+          },
+          borderRadius: {
+            DEFAULT: '0.25rem',
+            lg: '0.5rem',
+            xl: '0.75rem',
+            full: '9999px'
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class='bg-background-light dark:bg-background-dark font-display text-[#0d141b] dark:text-slate-50'>
+<div class='relative flex min-h-screen flex-col'>
+  <div class='flex-1 px-4 py-6 md:px-12 lg:px-24'>
+    <div class='mx-auto flex w-full max-w-4xl flex-col gap-6'>
+      <header class='flex flex-wrap items-center justify-between gap-4'>
+        <div>
+          <p class='text-sm font-medium text-gray-500 dark:text-gray-400'>Gestión de Cámaras</p>
+          <h1 class='text-3xl font-bold tracking-tight'>Crear nueva cámara</h1>
+        </div>
+        <a href="{% url 'camaras' %}"
+           class='inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-primary transition hover:border-primary hover:bg-primary/10 dark:border-gray-600 dark:text-primary'>
+          <span class='material-symbols-outlined'>arrow_back</span>
+          Volver
+        </a>
+      </header>
+
+      {% if messages %}
+        <div class='space-y-2'>
+          {% for message in messages %}
+            <div class='rounded-lg border px-4 py-3 text-sm font-medium {% if message.tags == 'success' %}border-green-200 bg-green-50 text-green-800 dark:border-green-900/40 dark:bg-green-950/50 dark:text-green-300{% else %}border-red-200 bg-red-50 text-red-700 dark:border-red-900/40 dark:bg-red-950/50 dark:text-red-300{% endif %}'>
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <section class='rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900'>
+        <div class='flex items-center gap-4 border-b border-gray-200 px-6 py-4 dark:border-gray-700'>
+          <div class='flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10 text-primary'>
+            <span class='material-symbols-outlined text-4xl'>videocam</span>
+          </div>
+          <div>
+            <h2 class='text-xl font-semibold'>Datos de la cámara</h2>
+            <p class='text-sm text-gray-500 dark:text-gray-400'>Completa la información básica para registrar una nueva
+              cámara en el sistema.</p>
+          </div>
+        </div>
+
+        <form method='post' class='px-6 py-6'>
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class='mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-950/50 dark:text-red-300'>
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+
+          <div class="grid gap-6 md:grid-cols-2">
+            <!-- Nombre de la Cámara -->
+            <div class="flex flex-col">
+              <label for='{{ form.nombre.id_for_label }}' class='mb-2 text-sm font-semibold'>{{ form.nombre.label }}
+                <span class='text-red-500'>*</span></label>
+              {{ form.nombre }}
+              {% if form.nombre.errors %}
+                <p class='mt-1 text-sm text-red-500'>{{ form.nombre.errors.0 }}</p>
+              {% elif form.nombre.help_text %}
+                <p class='mt-1 text-xs text-gray-500 dark:text-gray-400'>{{ form.nombre.help_text }}</p>
+              {% endif %}
+            </div>
+
+            <!-- Ubicación -->
+            <div class='flex flex-col'>
+              <label for='{{ form.ubicacion.id_for_label }}'
+                     class='mb-2 text-sm font-semibold'>{{ form.ubicacion.label }}</label>
+              {{ form.ubicacion }}
+              {% if form.ubicacion.errors %}
+                <p class='mt-1 text-sm text-red-500'>{{ form.ubicacion.errors.0 }}</p>
+              {% elif form.ubicacion.help_text %}
+                <p class='mt-1 text-xs text-gray-500 dark:text-gray-400'>{{ form.ubicacion.help_text }}</p>
+              {% endif %}
+            </div>
+
+            <!-- Estado -->
+            <div class='flex flex-col'>
+              <label for='{{ form.estado.id_for_label }}' class='mb-2 text-sm font-semibold'>{{ form.estado.label }}
+                <span class='text-red-500'>*</span></label>
+              {{ form.estado }}
+              {% if form.estado.errors %}
+                <p class='mt-1 text-sm text-red-500'>{{ form.estado.errors.0 }}</p>
+              {% elif form.estado.help_text %}
+                <p class='mt-1 text-xs text-gray-500 dark:text-gray-400'>{{ form.estado.help_text }}</p>
+              {% endif %}
+            </div>
+
+            <!-- Tipo de Fuente -->
+            <div class="flex flex-col">
+              <label for="{{ form.tipo_fuente.id_for_label }}"
+                     class="mb-2 text-sm font-semibold">{{ form.tipo_fuente.label }} <span class="text-red-500">*</span></label>
+              {{ form.tipo_fuente }}
+              {% if form.tipo_fuente.errors %}
+                <p class="mt-1 text-sm text-red-500">{{ form.tipo_fuente.errors.0 }}</p>
+              {% elif form.tipo_fuente.help_text %}
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ form.tipo_fuente.help_text }}</p>
+              {% endif %}
+            </div>
+
+            <!-- URL de Streaming -->
+            <div class="flex flex-col md:col-span-2" id="url_streaming_container" style="display: none;">
+              <label for='{{ form.url_streaming.id_for_label }}'
+                     class='mb-2 text-sm font-semibold'>{{ form.url_streaming.label }}</label>
+              {{ form.url_streaming }}
+              {% if form.url_streaming.errors %}
+                <p class='mt-1 text-sm text-red-500'>{{ form.url_streaming.errors.0 }}</p>
+              {% elif form.url_streaming.help_text %}
+                <p class='mt-1 text-xs text-gray-500 dark:text-gray-400'>{{ form.url_streaming.help_text }}</p>
+              {% endif %}
+            </div>
+
+            <!-- Archivo de Video -->
+            <div class="flex flex-col md:col-span-2" id="archivo_video_container" style="display: none;">
+              <label for="{{ form.archivo_video.id_for_label }}"
+                     class="mb-2 text-sm font-semibold">{{ form.archivo_video.label }}</label>
+              {{ form.archivo_video }}
+              {% if form.archivo_video.errors %}
+                <p class="mt-1 text-sm text-red-500">{{ form.archivo_video.errors.0 }}</p>
+              {% elif form.archivo_video.help_text %}
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ form.archivo_video.help_text }}</p>
+              {% else %}
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Selecciona un archivo .mp4 disponible en la
+                  carpeta static/videos.</p>
+              {% endif %}
+            </div>
+
+            <!-- Cámara Web en Vivo -->
+            <div class="flex flex-col md:col-span-2" id="camera_live_container" style="display: none;">
+              <label class="mb-2 text-sm font-semibold">Cámara Web en Vivo</label>
+
+              <div class="space-y-4">
+                <div class="flex gap-3">
+                  <button type="button" id="startCameraBtn"
+                          class="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700">
+                    <span class="material-symbols-outlined text-base">videocam</span>
+                    Iniciar Cámara
+                  </button>
+                  <button type="button" id="stopCameraBtn"
+                          class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                          style="display: none;">
+                    <span class="material-symbols-outlined text-base">stop_circle</span>
+                    Detener
+                  </button>
+                </div>
+
+                <div id="cameraPreview"
+                     class="overflow-hidden rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600"
+                     style="display: none;">
+                  <video id="videoElement" autoplay playsinline
+                         class="h-auto w-full max-h-[400px] bg-black object-contain"></video>
+                </div>
+
+                <div id="cameraStatus" class="text-sm text-gray-500"></div>
+              </div>
+            </div>
+
+            <!-- Cámara Habilitada -->
+            <div class="flex flex-col md:col-span-2">
+              <div class="flex items-center gap-3">
+                {{ form.habilitada }}
+                <div>
+                  <label for='{{ form.habilitada.id_for_label }}'
+                         class='text-sm font-semibold'>{{ form.habilitada.label }}</label>
+                  {% if form.habilitada.help_text %}
+                    <p class='text-xs text-gray-500 dark:text-gray-400'>{{ form.habilitada.help_text }}</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Campo oculto para frame de cámara -->
+          {{ form.camera_frame }}
+
+          <!-- Botones de acción -->
+          <div class='mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end'>
+            <a href="{% url 'camaras' %}"
+               class='inline-flex items-center justify-center gap-2 rounded-lg border border-red-500 px-5 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:border-red-400 dark:text-red-300 dark:hover:bg-red-500/10'>
+              <span class='material-symbols-outlined text-base'>cancel</span>
+              Cancelar
+            </a>
+            <button type='submit'
+                    class='inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary/90'>
+              <span class='material-symbols-outlined text-base'>save</span>
+              Guardar cámara
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+  let videoStream = null;
+  let videoElement = null;
+
+  document.addEventListener('DOMContentLoaded', function () {
+    // Selectores de elementos
+    const tipoFuenteSelect = document.getElementById('{{ form.tipo_fuente.id_for_label }}');
+    const urlStreamingContainer = document.getElementById('url_streaming_container');
+    const archivoVideoContainer = document.getElementById('archivo_video_container');
+    const cameraLiveContainer = document.getElementById('camera_live_container');
+    const startCameraBtn = document.getElementById('startCameraBtn');
+    const stopCameraBtn = document.getElementById('stopCameraBtn');
+    const cameraPreview = document.getElementById('cameraPreview');
+    const cameraStatus = document.getElementById('cameraStatus');
+    videoElement = document.getElementById('videoElement');
+    const habilitadaCheckbox = document.getElementById('{{ form.habilitada.id_for_label }}');
+    const camaraDeshabilitadaWarning = document.getElementById('camaraDeshabilitadaWarning');
+
+    if (!tipoFuenteSelect || !habilitadaCheckbox) {
+      return;
+    }
+
+    // Función para controlar el estado de los botones basado en el checkbox
+    function updateCameraControlsState() {
+      const isEnabled = habilitadaCheckbox.checked;
+
+      if (isEnabled) {
+        startCameraBtn.disabled = false;
+        startCameraBtn.classList.remove('bg-gray-400', 'cursor-not-allowed', 'hover:bg-gray-500');
+        startCameraBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+        camaraDeshabilitadaWarning.classList.add('hidden');
+      } else {
+        startCameraBtn.disabled = true;
+        startCameraBtn.classList.add('bg-gray-400', 'cursor-not-allowed', 'hover:bg-gray-500');
+        startCameraBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+
+        if (tipoFuenteSelect.value === 'cameraLive') {
+          camaraDeshabilitadaWarning.classList.remove('hidden');
+        }
+      }
+    }
+
+    // Función para mostrar/ocultar campos según el tipo de fuente
+    function toggleFields() {
+      const tipoFuente = tipoFuenteSelect.value;
+      urlStreamingContainer.style.display = 'none';
+      archivoVideoContainer.style.display = 'none';
+      cameraLiveContainer.style.display = 'none';
+
+      if (tipoFuente === 'stream') {
+        urlStreamingContainer.style.display = 'block';
+      } else if (tipoFuente === 'archivo') {
+        archivoVideoContainer.style.display = 'block';
+      } else if (tipoFuente === 'cameraLive') {
+        cameraLiveContainer.style.display = 'block';
+      }
+
+      updateCameraControlsState();
+    }
+
+    // Función para detener la cámara
+    function stopCamera() {
+      if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+        videoStream = null;
+        videoElement.srcObject = null;
+
+        cameraPreview.style.display = 'none';
+        startCameraBtn.style.display = 'inline-flex';
+        stopCameraBtn.style.display = 'none';
+
+        cameraStatus.textContent = 'Cámara detenida';
+        cameraStatus.className = 'text-sm text-gray-500';
+
+        // Habilitar el checkbox nuevamente cuando la cámara se detiene
+        habilitadaCheckbox.disabled = false;
+      }
+    }
+
+    // --- EVENT LISTENERS ---
+
+    // LÓGICA CORREGIDA: Escuchar cambios en el select de tipo de fuente
+    tipoFuenteSelect.addEventListener('change', function () {
+      // 1. PRIMERO: Siempre intentar detener la cámara si está activa.
+      // Esto asegura que al cambiar de "Cámara Web" a cualquier otra opción,
+      // la transmisión se detenga inmediatamente.
+      if (videoStream) {
+        stopCamera();
+      }
+
+      // 2. SEGUNDO: Actualizar la visibilidad de los campos.
+      toggleFields();
+    });
+
+    habilitadaCheckbox.addEventListener('change', updateCameraControlsState);
+
+    // Iniciar cámara web
+    if (startCameraBtn) {
+      startCameraBtn.addEventListener('click', async function () {
+        if (startCameraBtn.disabled) return;
+
+        try {
+          cameraStatus.textContent = 'Solicitando acceso a la cámara...';
+          cameraStatus.className = 'text-sm text-blue-600';
+
+          const constraints = {
+            video: {width: {ideal: 1280}, height: {ideal: 720}, facingMode: 'user'},
+            audio: false
+          };
+
+          videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+          videoElement.srcObject = videoStream;
+
+          cameraPreview.style.display = 'block';
+          startCameraBtn.style.display = 'none';
+          stopCameraBtn.style.display = 'inline-flex';
+
+          cameraStatus.textContent = '✓ Cámara activa - Transmitiendo en vivo';
+          cameraStatus.className = 'text-sm text-green-600 font-medium';
+
+          // Deshabilitar el checkbox para evitar cambios mientras la cámara está activa
+          habilitadaCheckbox.disabled = true;
+
+        } catch (error) {
+          console.error('Error al acceder a la cámara:', error);
+          let errorMsg = 'Error al acceder a la cámara. ';
+          if (error.name === 'NotAllowedError') {
+            errorMsg += 'Permiso denegado. Por favor, permite el acceso a la cámara en tu navegador.';
+          } else if (error.name === 'NotFoundError') {
+            errorMsg += 'No se encontró ninguna cámara conectada.';
+          } else if (error.name === 'NotReadableError') {
+            errorMsg += 'La cámara está siendo usada por otra aplicación.';
+          } else {
+            errorMsg += error.message;
+          }
+          cameraStatus.textContent = errorMsg;
+          cameraStatus.className = 'text-sm text-red-600';
+        }
+      });
+    }
+
+    // Detener cámara con el botón
+    if (stopCameraBtn) {
+      stopCameraBtn.addEventListener('click', function () {
+        stopCamera();
+      });
+    }
+
+    // Detener cámara al salir de la página
+    window.addEventListener('beforeunload', function () {
+      stopCamera();
+    });
+
+    // --- INICIALIZACIÓN ---
+    toggleFields();
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,132 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mi perfil - Tracker IA</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  </head>
+  <body class="bg-background-light dark:bg-background-dark font-display text-[#0d141b] dark:text-white">
+    <div class="min-h-screen flex items-start justify-center py-6 px-4">
+      <div class="w-full max-w-2xl">
+        <header class="mb-6 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <img src="{% static 'images/TRACKER IA.png' %}" alt="logo" class="h-10 w-10" />
+            <h1 class="text-2xl font-bold">Perfil</h1>
+          </div>
+          <a href="{% url 'panel' %}" class="text-sm text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white font-medium">Volver al panel</a>
+        </header>
+
+        <div class="rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+          <form method="post" enctype="multipart/form-data" class="grid grid-cols-1 gap-6 md:grid-cols-3" novalidate>
+            {% csrf_token %}
+
+            <!-- Left: avatar -->
+            <div class="flex flex-col items-center md:col-span-1">
+              <div class="relative">
+                <div id="avatar-preview" class="h-40 w-40 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center border">
+                  {% if user.profile_image %}
+                  <img id="avatar-img" src="{{ user.profile_image.url }}" alt="Avatar" class="h-full w-full object-cover" />
+                  <span id="avatar-initial" class="hidden text-4xl font-semibold text-gray-500">{{ user.first_name|default:user.username|first|upper }}</span>
+                  {% else %}
+                  <img id="avatar-img" src="" alt="Avatar" class="hidden h-full w-full object-cover" />
+                  <span id="avatar-initial" class="text-4xl font-semibold text-gray-500">{{ user.first_name|default:user.username|first|upper }}</span>
+                  {% endif %}
+                </div>
+
+                <!-- overlay button -->
+                <label for="id_profile_image" title="Cambiar foto" class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white/90 dark:bg-gray-800 border rounded-full p-2 shadow-sm text-sm cursor-pointer hover:bg-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-700 dark:text-gray-200" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M4 5a2 2 0 00-2 2v7a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-3.172a2 2 0 01-1.414-.586l-.828-.828A2 2 0 008.172 2H7.828a2 2 0 00-1.414.586l-.828.828A2 2 0 014 5z"/></svg>
+                </label>
+
+              </div>
+
+              <div class="sr-only mt-2">
+                {{ form.profile_image }}
+              </div>
+
+              <p class="mt-3 text-xs text-gray-500">JPG/PNG, máximo 5MB recomendado.</p>
+            </div>
+
+            <!-- Right: fields -->
+            <div class="md:col-span-2">
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Nombre</label>
+                  {{ form.first_name }}
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Apellido</label>
+                  {{ form.last_name }}
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Correo electrónico</label>
+                {{ form.email }}
+              </div>
+
+              <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Teléfono</label>
+                {{ form.telefono }}
+              </div>
+
+              <div class="mt-6 flex items-center gap-3">
+                <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 font-semibold text-white shadow-sm hover:bg-primary/90" style="color: black">Guardar cambios</button>
+                <a href="{% url 'panel' %}" class="text-sm text-gray-600 dark:text-gray-300">Cancelar</a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Avatar preview: when user selects a file, show preview and hide initial
+      (function(){
+        const input = document.querySelector('input[name="profile_image"]');
+        const img = document.getElementById('avatar-img');
+        const initial = document.getElementById('avatar-initial');
+        if (!input) return;
+        input.classList.add('mt-1');
+        input.addEventListener('change', function(e){
+          const file = e.target.files && e.target.files[0];
+          if (!file) {
+            if (img) { img.src = ''; img.classList.add('hidden'); }
+            if (initial) { initial.classList.remove('hidden'); }
+            return;
+          }
+          if (!file.type.startsWith('image/')) return;
+          const reader = new FileReader();
+          reader.onload = function(ev){
+            if (img) { img.src = ev.target.result; img.classList.remove('hidden'); }
+            if (initial) { initial.classList.add('hidden'); }
+          };
+          reader.readAsDataURL(file);
+        });
+      })();
+      // Ensure visible text color and standard input classes for all form inputs
+      (function(){
+        const form = document.querySelector('form[enctype="multipart/form-data"]');
+        if (!form) return;
+        const inputs = form.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="password"], textarea, select');
+        const baseClasses = 'form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-[#0d141b] dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-[#cfdbe7] bg-white dark:bg-background-dark dark:border-gray-600 h-14 placeholder:text-[#4c739a] p-[15px] text-base font-normal leading-normal';
+        const isDark = document.body.classList.contains('dark');
+        inputs.forEach(el => {
+          // Add classes if not already present
+          if (!el.className || !el.className.includes('form-input')) {
+            el.className = (el.className + ' ' + baseClasses).trim();
+          }
+          // Force inline color in case global CSS overrides it
+          try {
+            el.style.color = isDark ? '#ffffff' : '#0d141b';
+            el.style.backgroundColor = isDark ? '' : '#ffffff';
+          } catch (err) {
+            // ignore
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

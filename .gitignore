@@ -1,0 +1,7 @@
+.idea/
+.venv/
+media/
+Motorcycle_rider_nuevo/
+__pycache__/
+.env
+karlos-S3_accessKeys.csv
